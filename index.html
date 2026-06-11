@@ -1,6 +1,285 @@
 <!doctype html>
-<html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゲームUIプロンプト生成ツール v1.0</title>
+<style>
+:root{
+  --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
+  --blue:#66d9ef;--yellow:#ffd166;--purple:#b39ddb;--green:#8be28b;--red:#e74c3c;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:1120px;margin:auto;padding:18px}
+h1{font-size:22px;margin:8px 0}.desc{color:var(--muted);line-height:1.7;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+.section-title{color:var(--text);font-size:13px;font-weight:800;margin:16px 0 10px;padding-top:14px;border-top:1px solid var(--line);letter-spacing:.02em}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+label{display:block;color:var(--muted);font-size:13px;margin-bottom:5px}
+select,input[type=text],input[type=number],textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--field);color:var(--text);padding:12px;font-size:15px}
+textarea{min-height:560px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;resize:vertical}
+textarea.small{min-height:150px}.hint{margin-top:7px;font-size:12px;color:#7a8ba8;line-height:1.6;min-height:1.2em}
+button{border:0;border-radius:12px;background:var(--blue);color:#071018;font-weight:800;padding:12px 14px;margin:6px 6px 0 0;font-size:15px;cursor:pointer}
+button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:var(--text)}
+.note{border-left:3px solid var(--blue);padding-left:10px;color:var(--muted);margin:10px 0 0}
+.mode-toggle{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mode-btn{border-radius:0;margin:0;background:var(--field);color:var(--muted);font-size:13px;padding:12px 8px}.mode-btn.active{background:var(--blue);color:#071018}
+.parts-scroll{overflow-x:auto;padding-bottom:6px;margin:0 -4px}.parts-list{display:flex;gap:8px;padding:4px;min-width:max-content;flex-wrap:wrap}
+.part-chip{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:13px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.part-chip.active{border-color:var(--blue);color:var(--blue)}.ux-chip.active{border-color:var(--yellow);color:var(--yellow)}.mod-chip.active{border-color:var(--purple);color:var(--purple)}.neg-chip.active{border-color:var(--green);color:var(--green)}
+.part-chip input{width:14px;height:14px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;margin:0}.hidden{display:none!important}
+.lock-row{display:grid;grid-template-columns:1fr 112px 58px;gap:8px;align-items:end}.lock-row label{margin:0}.lock-row .lock{display:flex;align-items:center;justify-content:center;height:43px;border:1px solid var(--line);background:var(--field);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer}.lock input{margin-right:5px;accent-color:var(--blue)}
+.conflict-box{display:none;margin-top:12px;background:#2a1a1a;border:1px solid #c0392b;border-radius:12px;padding:12px 14px}.conflict-title{color:#ff8175;font-size:13px;font-weight:800;margin-bottom:6px}.conflict-item{font-size:12px;color:#e0a0a0;line-height:1.8;padding-left:8px;border-left:2px solid #c0392b;margin-bottom:6px}
+.preview{background:#0c111a;border:1px dashed var(--line);border-radius:12px;padding:12px;color:#aab4c8;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;white-space:pre-wrap;line-height:1.45}
+@media(max-width:760px){main{padding:12px}.grid,.grid.three{grid-template-columns:1fr}.mode-toggle{grid-template-columns:1fr}.lock-row{grid-template-columns:1fr 1fr 70px}textarea{min-height:460px}}
+</style>
+</head>
 <body>
-<h1>Hello GitHub Pages</h1>
+<main>
+<h1>ゲームUIプロンプト生成ツール v1.0</h1>
+<p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
+
+<div class="card">
+  <div class="section-title" style="border-top:0;padding-top:0;margin-top:0">1. OUTPUT MODE</div>
+  <div class="mode-toggle">
+    <button type="button" class="mode-btn active" id="btn_designSystem" onclick="setMode('designSystem')">Design System</button>
+    <button type="button" class="mode-btn" id="btn_componentSheet" onclick="setMode('componentSheet')">Component Sheet</button>
+    <button type="button" class="mode-btn" id="btn_asciiWireframe" onclick="setMode('asciiWireframe')">ASCII Wireframe</button>
+    <button type="button" class="mode-btn" id="btn_screenMockup" onclick="setMode('screenMockup')">Screen Mockup</button>
+    <button type="button" class="mode-btn" id="btn_promptPack" onclick="setMode('promptPack')">Prompt Pack</button>
+  </div>
+
+  <div class="section-title">2. STYLE</div>
+  <div class="grid">
+    <div><label>Platform</label><select id="platform"><option>スマホ縦持ち</option><option>スマホ横持ち</option><option>Steam / PC</option><option>PS5</option><option>Nintendo Switch</option></select></div>
+    <div><label>Visual Style</label><select id="style" onchange="autoSetRules();updateHints();"><option>3D Cartoon（3Dカートゥーン）</option><option>Matte 3D（マット3D）</option><option>Flat Design（フラットデザイン）</option><option>Neumorphism（ニューモーフィズム）</option><option>Skeuomorphism（スキュモーフィズム）</option><option>SF HUD</option><option>2D Illustrated（手描きイラスト）</option><option>Pixel Art（ピクセルアート）</option><option>Isometric（アイソメトリック）</option><option>Paper Cut（切り絵）</option><option>Sticker（ステッカー）</option></select><div id="styleHint" class="hint"></div></div>
+    <div><label>Design Philosophy</label><select id="philosophy" onchange="autoSetRules();updateHints();"><option>Toy-Like（玩具的）</option><option>Functional（機能主義）</option><option>Luxury（高級感）</option><option>Minimal（削ぎ落とす）</option><option>Craft（手作り感）</option></select><div id="philosophyHint" class="hint"></div></div>
+    <div><label>Material</label><select id="material" onchange="updateHints();"><option>Soft Plastic（柔らかいプラスチック）</option><option>Hard Plastic（硬質プラスチック）</option><option>Wood（木材）</option><option>Metal（金属）</option><option>Stone（石材）</option><option>Crystal / Glass（ガラス・水晶）</option><option>Paper / Cardboard（紙・厚紙）</option><option>Fabric / Felt（布・フェルト）</option><option>Leather（革）</option><option>Energy / Hologram（ホログラム）</option></select><div id="materialHint" class="hint"></div></div>
+    <div><label>Shape Language</label><select id="shape"><option>角丸</option><option>太くて厚い</option><option>薄く軽い</option><option>シャープ</option><option>レイヤード</option></select></div>
+    <div><label>Lighting</label><select id="lighting"><option>柔らかい光沢</option><option>フラット</option><option>マット</option><option>強い光沢</option><option>ネオン発光</option></select></div>
+    <div><label>Animation Feel</label><select id="animation"><option>Elastic / 弾む</option><option>Smooth / なめらか</option><option>Snappy / キビキビ</option><option>Bouncy / バウンス</option><option>Mechanical / カチッと</option></select></div>
+  </div>
+
+  <div class="section-title">3. WORLD SOURCE</div>
+  <div class="grid">
+    <div><label>Culture / Region</label><select id="culture" onchange="autoSetRules();updateHints();"><option>Global / Generic</option><option selected>India / インド</option><option>Japan / 日本</option><option>China / 中国</option><option>Korea / 韓国</option><option>Middle East / 中東</option><option>Southeast Asia / 東南アジア</option><option>Nordic / 北欧</option><option>Western Europe / 西欧</option><option>Eastern Europe / 東欧</option><option>Mediterranean / 地中海</option><option>Africa / アフリカ</option><option>Mesoamerica / メソアメリカ</option><option>Ancient Rome / 古代ローマ</option><option>Ancient Greece / 古代ギリシャ</option><option>Victorian Britain / ヴィクトリア朝英国</option></select></div>
+    <div><label>Motif Source</label><select id="motif" onchange="autoSetRules();updateHints();"><option selected>Toy / 玩具</option><option>Board Game / ボードゲーム</option><option>Playing Card / カード</option><option>Wood Craft / 木工</option><option>Paper Craft / 紙工作</option><option>Folk Art / 民芸</option><option>Jewelry / 宝飾</option><option>Architecture / 建築</option><option>Temple / 神殿</option><option>Machine / 機械</option><option>Clockwork / 時計仕掛け</option><option>Vehicle / 乗り物</option><option>Weapon / 武器</option><option>Armor / 防具</option><option>Treasure / 宝物</option><option>Magic Artifact / 魔法具</option><option>Nature / 自然</option><option>Forest / 森</option><option>Ocean / 海</option><option>Desert / 砂漠</option><option>Mountain / 山</option><option>Space / 宇宙</option><option>Food / 食べ物</option><option>Animal / 動物</option><option>Plant / 植物</option></select></div>
+    <div><label>Era / Reference</label><select id="era"><option>Ancient</option><option>Classical</option><option>Medieval</option><option>Early Modern</option><option>Industrial</option><option>Victorian</option><option>Retro 1950s</option><option>Retro 1980s</option><option selected>Contemporary</option><option>Near Future</option><option>Far Future</option><option>Post Apocalyptic</option><option>Timeless</option></select></div>
+    <div><label>Mood</label><select id="mood" onchange="autoSetRules();"><option selected>Playful</option><option>Festival</option><option>Cute</option><option>Warm</option><option>Cozy</option><option>Peaceful</option><option>Elegant</option><option>Luxury</option><option>Heroic</option><option>Adventure</option><option>Mysterious</option><option>Magical</option><option>Dark</option><option>Horror</option><option>Tense</option><option>Competitive</option><option>Chaotic</option><option>Industrial</option><option>Sci-Fi</option><option>Minimal</option></select></div>
+  </div>
+  <div id="worldHint" class="hint"></div>
+
+  <div class="section-title">4. VISUAL SYSTEM</div>
+  <div class="grid">
+    <div><label>Color System</label><select id="colorSystem"><option selected>Warm Primary Colors / 暖色系原色</option><option>Pastel / パステル</option><option>Earth Colors / アースカラー</option><option>Neon / ネオン</option><option>Monochrome / モノクロ</option><option>Dark Jewel Tone / 深い宝石色</option><option>Natural Craft / 自然素材色</option></select></div>
+    <div><label>Decoration Level</label><select id="decoration" onchange="updateDecorationRule()"><option selected>Standard</option><option>Primitive</option><option>Rich</option><option>Decorative</option></select></div>
+    <div><label>Decoration Rule</label><select id="decorationRule"><option selected>Small Edge Accent / 小さな端装飾</option><option>No Decoration / 装飾なし</option><option>Corner Accent / 角のみ</option><option>Top Center Accent / 上辺中央のみ</option><option>Pattern Band / 帯状模様</option><option>Full Ornamental / 装飾主役</option></select></div>
+  </div>
+
+  <div class="section-title">5. SHAPE MODIFIER</div>
+  <div class="grid three">
+    <div><label>Form Modifier</label><select id="formModifier" onchange="updateModifierPreview()"><option>None</option><option>Rounded</option><option selected>Chunky</option><option>Inflated</option><option>Asymmetric</option><option>Organic</option></select></div>
+    <div><label>Edge Modifier</label><select id="edgeModifier" onchange="updateModifierPreview()"><option selected>None</option><option>Chamfer</option><option>Corner Cut</option><option>Notch</option><option>Scallop</option><option>Stepped</option></select></div>
+    <div><label>Frame Modifier</label><select id="frameModifier" onchange="updateModifierPreview()"><option>None</option><option selected>Layered</option><option>Double Frame</option><option>Floating Frame</option><option>Split Frame</option><option>Bracket Frame</option></select></div>
+  </div>
+  <div id="modifierPreview" class="preview" style="margin-top:10px"></div>
+
+  <div class="section-title">6. SYSTEM RULES</div>
+  <div class="grid">
+    <div><label>System Rule Mode</label><select id="ruleMode" onchange="toggleRulesMode();autoSetRules();"><option value="auto" selected>Auto / 選択内容から自動セット</option><option value="preset">Preset / 保存済みシステム</option><option value="manual">Manual / 手入力</option></select></div>
+    <div id="presetBox" class="hidden"><label>Preset</label><select id="systemPreset" onchange="applyPreset()"><option>Indian Toy System v1.0</option><option>Board Game System v1.0</option><option>Cyber HUD System v1.0</option><option>Dark Fantasy System v1.0</option><option>Casual Match3 System v1.0</option><option>Minimal Mobile System v1.0</option></select></div>
+  </div>
+  <div class="grid three" style="margin-top:10px">
+    <div class="lock-row"><label>Corner Radius<input id="radius" type="number" value="20"></label><div class="lock"><input type="checkbox" id="lockRadius" checked>Lock</div></div>
+    <div class="lock-row"><label>Stroke Width<input id="stroke" type="number" value="3"></label><div class="lock"><input type="checkbox" id="lockStroke" checked>Lock</div></div>
+    <div class="lock-row"><label>Shadow Offset Y<input id="shadowY" type="number" value="6"></label><div class="lock"><input type="checkbox" id="lockShadowY">Lock</div></div>
+    <div class="lock-row"><label>Shadow Blur<input id="shadowBlur" type="number" value="12"></label><div class="lock"><input type="checkbox" id="lockShadowBlur">Lock</div></div>
+    <div class="lock-row"><label>Button Height<input id="buttonHeight" type="number" value="72"></label><div class="lock"><input type="checkbox" id="lockButtonHeight" checked>Lock</div></div>
+    <div class="lock-row"><label>Panel Padding<input id="panelPadding" type="number" value="24"></label><div class="lock"><input type="checkbox" id="lockPanelPadding">Lock</div></div>
+    <div class="lock-row"><label>Icon Size<input id="iconSize" type="number" value="48"></label><div class="lock"><input type="checkbox" id="lockIconSize">Lock</div></div>
+    <div class="lock-row"><label>Grid Unit<input id="gridUnit" type="number" value="8"></label><div class="lock"><input type="checkbox" id="lockGridUnit" checked>Lock</div></div>
+  </div>
+
+  <div class="section-title components-section">7. COMPONENT SELECTOR</div>
+  <div class="parts-scroll components-section"><div class="parts-list" id="partsList"></div></div>
+
+  <div class="section-title">UX GOAL</div>
+  <div class="parts-scroll"><div class="parts-list" id="uxList"></div></div>
+
+  <div id="screenSettings" class="hidden">
+    <div class="section-title">8. SCREEN SETTINGS</div>
+    <div class="grid">
+      <div><label>Screen Type</label><select id="screenType" onchange="applyWireframeTemplate()"><option>Home</option><option>Shop</option><option>Gacha</option><option>Reward</option><option>Event</option><option>Mission</option><option>Inventory</option></select></div>
+      <div><label>Layout Priority</label><select id="layoutPriority"><option>Bottom Action Focus / 下部操作重視</option><option>Information Density / 情報密度重視</option><option>Hero Visual Focus / ビジュアル重視</option><option>List Browsing / リスト閲覧重視</option></select></div>
+      <div><label>Safe Area</label><select id="safeArea"><option>Enabled / セーフエリア有効</option><option>Disabled / セーフエリア指定なし</option></select></div>
+      <div><label>Wireframe Template</label><button class="ghost" onclick="applyWireframeTemplate()" type="button">テンプレート反映</button></div>
+    </div>
+    <label style="margin-top:10px">ASCII Wireframe</label>
+    <textarea id="wireframe" class="small"></textarea>
+  </div>
+
+  <div class="section-title">9. NEGATIVE PROMPT BUILDER</div>
+  <div class="parts-scroll"><div class="parts-list" id="negList"></div></div>
+  <div><label style="margin-top:10px">Culture Avoid Rules</label><input id="cultureAvoid" type="text" value="landmarks, religious symbols, stereotype motifs, mascot dominance"></div>
+
+  <div class="section-title">追加指示</div>
+  <textarea id="userNote" class="small" placeholder="例：ボタンの角丸は20px固定。レアリティ差分は色のみ変更。など"></textarea>
+
+  <div id="conflictBox" class="conflict-box"><div class="conflict-title">⚠️ 組み合わせの注意</div><div id="conflictList"></div></div>
+
+  <div style="margin-top:14px">
+    <button onclick="generatePrompt()">プロンプト生成</button>
+    <button class="secondary" onclick="copyPrompt()">コピー</button>
+    <button onclick="selectPrompt()">全文選択</button>
+    <button class="ghost" onclick="resetToRecommended()">推奨値へ戻す</button>
+  </div>
+  <p id="status" class="note">Output Modeを選択できます。選択後に「プロンプト生成」を押してください。</p>
+</div>
+
+<div class="card">
+  <label>生成プロンプト</label>
+  <textarea id="output">（「プロンプト生成」ボタンを押すと表示されます）</textarea>
+</div>
+</main>
+<script>
+function el(id){return document.getElementById(id)}
+function v(id){return el(id).value}
+function checked(id){return el(id).checked}
+function setVal(id,val){el(id).value=val}
+
+var currentMode='designSystem';
+var ALL_PARTS=['Primary Button','Secondary Button','Icon Button','Panel','Popup Window','Tab','Currency UI','Badge','Icon Frame','Reward Window','Scroll List','Health Bar','Progress Bar','Toast / Alert','Loading Spinner','Tooltip','Slider','Toggle Switch','Input Field','Header Bar'];
+var DEFAULT_PARTS={'Primary Button':1,'Secondary Button':1,'Icon Button':1,'Panel':1,'Popup Window':1,'Tab':1,'Currency UI':1,'Badge':1,'Icon Frame':1,'Reward Window':1,'Scroll List':1};
+var ALL_UX=['達成感','収集欲','驚き','癒やし','没入感','高揚感','緊張感','爽快感','愛着','競争心'];
+var ALL_NEG=['no text','no labels','no mascot','no character','no phone mockup','no infographic','no table','no decorative background','no excessive ornament','no full pattern fill','no realistic material','no metallic texture unless selected','no glass unless selected'];
+
+var HINTS={
+ style:{'3D Cartoon（3Dカートゥーン）':'誇張された立体感・鮮やかな色・デフォルメされた光沢。','Matte 3D（マット3D）':'光沢を抑えた柔らかい3D。マット素材と相性が良い。','SF HUD':'透過、グロー、スキャンライン、幾何学的UI。'},
+ philosophy:{'Toy-Like（玩具的）':'触りたくなる厚み、丸み、押した時の弾力を優先。','Functional（機能主義）':'装飾より視認性・階層・導線を優先。','Luxury（高級感）':'余白・素材・細部精度で価値を伝える。','Minimal（削ぎ落とす）':'形、色、余白だけで成立させる。','Craft（手作り感）':'手作りの揺らぎと温かみを許容する。'},
+ material:{'Soft Plastic（柔らかいプラスチック）':'安全・親しみ・カジュアル。玩具的UIに向く。','Energy / Hologram（ホログラム）':'半透明発光面、エッジグロー、非物質感。','Crystal / Glass（ガラス・水晶）':'透明感、屈折、シャープなハイライト。'}
+};
+
+function buildChips(containerId, items, defaults, klass, dataName){
+ var list=el(containerId); list.innerHTML='';
+ items.forEach(function(name){
+  var chip=document.createElement('label');
+  var on=!!(defaults&&defaults[name]);
+  chip.className='part-chip '+(klass||'')+(on?' active':'');
+  chip.innerHTML='<input type="checkbox" '+(on?'checked':'')+' data-'+dataName+'="'+name+'"><span>'+name+'</span>';
+  chip.querySelector('input').addEventListener('change',function(){this.closest('label').classList.toggle('active',this.checked)});
+  list.appendChild(chip);
+ });
+}
+function selected(containerId,dataName){return Array.from(document.querySelectorAll('#'+containerId+' input:checked')).map(function(x){return x.dataset[dataName]})}
+function getParts(){return selected('partsList','part')}
+function getUx(){return selected('uxList','ux')}
+function getNeg(){return selected('negList','neg')}
+
+function setMode(mode){
+ currentMode=mode;
+ ['designSystem','componentSheet','asciiWireframe','screenMockup','promptPack'].forEach(function(m){el('btn_'+m).classList.toggle('active',m===mode)});
+ var showScreen=(mode==='asciiWireframe'||mode==='screenMockup'||mode==='promptPack');
+ el('screenSettings').classList.toggle('hidden',!showScreen);
+ document.querySelectorAll('.components-section').forEach(function(x){x.classList.toggle('hidden',mode==='asciiWireframe')});
+ if(showScreen && !v('wireframe').trim()) applyWireframeTemplate();
+}
+function updateHints(){
+ el('styleHint').textContent=(HINTS.style[v('style')]||'');
+ el('philosophyHint').textContent=(HINTS.philosophy[v('philosophy')]||'');
+ el('materialHint').textContent=(HINTS.material[v('material')]||'');
+ el('worldHint').textContent='Culture / Motif / Era / Mood を組み合わせ、単語ひとつの「世界観」に依存しない構造です。';
+ checkConflicts();
+}
+function updateDecorationRule(){
+ var d=v('decoration');
+ if(d==='Primitive') setVal('decorationRule','No Decoration / 装飾なし');
+ if(d==='Standard') setVal('decorationRule','Small Edge Accent / 小さな端装飾');
+ if(d==='Rich') setVal('decorationRule','Pattern Band / 帯状模様');
+ if(d==='Decorative') setVal('decorationRule','Full Ornamental / 装飾主役');
+}
+function updateModifierPreview(){
+ var form=v('formModifier'), edge=v('edgeModifier'), frame=v('frameModifier');
+ el('modifierPreview').textContent='Form: '+form+' / Edge: '+edge+' / Frame: '+frame+'\n'+modifierRuleText();
+}
+function modifierRuleText(){return 'Apply modifiers consistently to buttons, panels, tabs, badges, icon frames, and list items. Do not change the component family shape per rarity or state.'}
+
+var PRESETS={
+ 'Indian Toy System v1.0':{radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8},
+ 'Board Game System v1.0':{radius:16,stroke:3,shadowY:5,shadowBlur:10,buttonHeight:68,panelPadding:24,iconSize:44,gridUnit:8},
+ 'Cyber HUD System v1.0':{radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8},
+ 'Dark Fantasy System v1.0':{radius:12,stroke:4,shadowY:8,shadowBlur:18,buttonHeight:76,panelPadding:28,iconSize:48,gridUnit:8},
+ 'Casual Match3 System v1.0':{radius:24,stroke:3,shadowY:7,shadowBlur:14,buttonHeight:76,panelPadding:24,iconSize:48,gridUnit:8},
+ 'Minimal Mobile System v1.0':{radius:12,stroke:1,shadowY:2,shadowBlur:8,buttonHeight:56,panelPadding:20,iconSize:32,gridUnit:8}
+};
+function applyRuleObj(o){Object.keys(o).forEach(function(k){if(el(k)) setVal(k,o[k])})}
+function applyPreset(){applyRuleObj(PRESETS[v('systemPreset')]);}
+function toggleRulesMode(){el('presetBox').classList.toggle('hidden',v('ruleMode')!=='preset'); var manual=v('ruleMode')==='manual'; document.querySelectorAll('#radius,#stroke,#shadowY,#shadowBlur,#buttonHeight,#panelPadding,#iconSize,#gridUnit').forEach(function(i){i.disabled=!manual && v('ruleMode')==='auto'});}
+function autoSetRules(){
+ if(v('ruleMode')==='preset'){applyPreset();return}
+ if(v('ruleMode')==='manual') return;
+ var o={radius:16,stroke:2,shadowY:4,shadowBlur:10,buttonHeight:64,panelPadding:20,iconSize:40,gridUnit:8};
+ if(v('style').indexOf('3D Cartoon')>=0||v('philosophy').indexOf('Toy-Like')>=0){o={radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8};}
+ if(v('style')==='SF HUD'||v('mood')==='Sci-Fi'){o={radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8}; setVal('edgeModifier','Notch'); setVal('frameModifier','Split Frame')}
+ if(v('motif').indexOf('Board Game')>=0){o={radius:16,stroke:3,shadowY:5,shadowBlur:10,buttonHeight:68,panelPadding:24,iconSize:44,gridUnit:8}; setVal('formModifier','Rounded'); setVal('edgeModifier','Chamfer'); setVal('frameModifier','Double Frame')}
+ applyRuleObj(o); updateModifierPreview();
+}
+function rulesText(){
+ var rows=[['Corner Radius',v('radius')+'px',checked('lockRadius')],['Stroke Width',v('stroke')+'px',checked('lockStroke')],['Shadow Offset Y',v('shadowY')+'px',checked('lockShadowY')],['Shadow Blur',v('shadowBlur')+'px',checked('lockShadowBlur')],['Button Height',v('buttonHeight')+'px',checked('lockButtonHeight')],['Panel Padding',v('panelPadding')+'px',checked('lockPanelPadding')],['Icon Size',v('iconSize')+'px',checked('lockIconSize')],['Grid Unit',v('gridUnit')+'px',checked('lockGridUnit')]];
+ return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
+}
+function commonContext(){
+ return 'Platform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\nDecoration Level: '+v('decoration')+'\nDecoration Rule: '+v('decorationRule')+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
+}
+function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
+function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
+function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
+function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
+
+function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
+function buildComponentSheetPrompt(){return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only. Standard decoration means maximum 2 tiny motifs per component, decoration size under 8% of component size, placed only at an edge or one corner, never full pattern fill.\nNegative Prompt: '+negativeText()+extraText();}
+function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mobile game screen.\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n\nRequirements:\n- Use simple ASCII boxes.\n- Separate header, main content, primary action, list/content area, and bottom navigation if needed.\n- Optimize for one-handed operation when mobile portrait is selected.\n- Do not describe visual style. Focus only on structure.\n\nCurrent draft wireframe:\n'+v('wireframe')+extraText();}
+function buildScreenMockupPrompt(){return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nNegative Prompt: '+negativeText()+extraText();}
+function buildPromptPack(){return '[01 DESIGN SYSTEM SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
+function generatePrompt(){
+ var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='asciiWireframe')r=buildAsciiWireframePrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
+ el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
+}
+function copyPrompt(){var o=el('output');o.focus();o.select();(navigator.clipboard?navigator.clipboard.writeText(o.value):Promise.reject()).then(function(){el('status').textContent='コピーしました。'}).catch(function(){document.execCommand('copy');el('status').textContent='コピーしました。'});}
+function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
+function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decoration','Standard');setVal('decorationRule','Small Edge Accent / 小さな端装飾');setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
+
+function applyWireframeTemplate(){
+ var t=v('screenType'); var wf='';
+ if(t==='Home') wf='+----------------------------------+\n| [HEADER: MENU / CURRENCY]       |\n+----------------------------------+\n| [HERO / PLAYER STATUS]          |\n|                                  |\n| [MAIN CONTENT CARD]             |\n|                                  |\n+----------------------------------+\n| [PRIMARY ACTION BUTTON]         |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
+ if(t==='Shop') wf='+----------------------------------+\n| [BACK] [SHOP TITLE] [CURRENCY]  |\n+----------------------------------+\n| [CATEGORY TABS]                 |\n+----------------------------------+\n| [FEATURED PRODUCT CARD]         |\n| [PRODUCT LIST ITEM]             |\n| [PRODUCT LIST ITEM]             |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
+ if(t==='Gacha') wf='+----------------------------------+\n| [HEADER: GACHA / CURRENCY]      |\n+----------------------------------+\n| [BANNER / FEATURED REWARD]      |\n|                                  |\n| [REWARD PREVIEW STRIP]          |\n+----------------------------------+\n| [DRAW 1]        [DRAW 10]       |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
+ if(t==='Reward') wf='+----------------------------------+\n| [REWARD TITLE]                  |\n+----------------------------------+\n| [REWARD GRID / ICON FRAMES]     |\n| [ITEM] [ITEM] [ITEM]            |\n| [ITEM] [ITEM] [ITEM]            |\n+----------------------------------+\n| [CLAIM BUTTON]                  |\n+----------------------------------+';
+ if(t==='Event') wf='+----------------------------------+\n| [EVENT HEADER / TIMER]          |\n+----------------------------------+\n| [EVENT BANNER]                  |\n| [MISSION LIST]                  |\n| [MISSION LIST]                  |\n+----------------------------------+\n| [PRIMARY CTA] [SECONDARY CTA]   |\n+----------------------------------+';
+ if(!wf) wf='+----------------------------------+\n| [HEADER]                         |\n+----------------------------------+\n| [MAIN CONTENT]                   |\n+----------------------------------+\n| [PRIMARY ACTION]                 |\n+----------------------------------+';
+ setVal('wireframe',wf);
+}
+function checkConflicts(){
+ var hits=[];
+ if(v('style')==='SF HUD' && (v('motif').indexOf('Toy')>=0||v('material').indexOf('Soft Plastic')>=0)) hits.push('SF HUD と Toy / Soft Plastic は衝突しやすいです。MotifをMachine、MaterialをEnergy/Hologramにすると安定します。');
+ if(v('philosophy').indexOf('Minimal')>=0 && (v('decoration')==='Rich'||v('decoration')==='Decorative')) hits.push('Minimal と Rich/Decorative は矛盾します。DecorationをPrimitive/Standardへ。');
+ if(v('style').indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢')) hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
+ var box=el('conflictBox'), list=el('conflictList');
+ if(hits.length){list.innerHTML=hits.map(function(h){return '<div class="conflict-item">'+h+'</div>'}).join('');box.style.display='block'}else{box.style.display='none'}
+}
+
+function bindModeButtons(){
+ ['designSystem','componentSheet','asciiWireframe','screenMockup','promptPack'].forEach(function(m){
+  var b=el('btn_'+m);
+  if(b){
+   b.addEventListener('click', function(ev){ ev.preventDefault(); setMode(m); });
+   b.addEventListener('touchend', function(ev){ ev.preventDefault(); setMode(m); }, {passive:false});
+  }
+ });
+}
+
+function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,ALL_NEG.reduce(function(a,b){a[b]=1;return a},{}),'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();setMode('designSystem');}
+init();
+</script>
 </body>
 </html>
