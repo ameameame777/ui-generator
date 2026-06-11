@@ -234,7 +234,7 @@ function commonContext(){
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
 function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
-function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
+function extraText(){return v('userNote').trim()?(('\nAdditional Instructions:\n'+v('userNote').trim())):''}
 
 function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
 function buildComponentSheetPrompt(){return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only. Standard decoration means maximum 2 tiny motifs per component, decoration size under 8% of component size, placed only at an edge or one corner, never full pattern fill.\nNegative Prompt: '+negativeText()+extraText();}
@@ -245,7 +245,7 @@ function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='asciiWireframe')r=buildAsciiWireframePrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
  el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
 }
-function copyPrompt(){var o=el('output');o.focus();o.select();(navigator.clipboard?navigator.clipboard.writeText(o.value):Promise.reject()).then(function(){el('status').textContent='コピーしました。'}).catch(function(){document.execCommand('copy');el('status').textContent='コピーしました。'});}
+function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent='コピーしました。'});}
 function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
 function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decoration','Standard');setVal('decorationRule','Small Edge Accent / 小さな端装飾');setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
 
