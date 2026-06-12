@@ -337,7 +337,7 @@ function bindModeButtons(){
  });
 }
 
-function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,ALL_NEG.reduce(function(a,b){a[b]=1;return a},{}),'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();setMode('designSystem');}
+function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,null,'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();setMode('designSystem');}
 init();
 </script>
 </body>
