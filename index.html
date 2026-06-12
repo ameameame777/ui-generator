@@ -50,6 +50,11 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
     <button type="button" class="mode-btn" id="btn_promptPack" onclick="setMode('promptPack')">Prompt Pack</button>
   </div>
 
+  <div class="section-title">GAME GENRE</div>
+  <div class="grid">
+    <div><label>Genre</label><select id="gameGenre" onchange="applyGenrePreset()"><option value="">-- 選択してください --</option><option value="Casual">Casual / カジュアル</option><option value="Idle">Idle / 放置</option><option value="Puzzle">Puzzle / パズル</option><option value="Gacha">Gacha / ガチャ</option><option value="RPG">RPG</option><option value="Fantasy">Fantasy / ファンタジー</option><option value="Action">Action / アクション</option><option value="Strategy">Strategy / ストラテジー</option><option value="SciFi">Sci-Fi / SF</option><option value="Horror">Horror / ホラー</option></select></div>
+  </div>
+
   <div class="section-title">2. STYLE</div>
   <div class="grid">
     <div><label>Platform</label><select id="platform"><option>スマホ縦持ち</option><option>スマホ横持ち</option><option>Steam / PC</option><option>PS5</option><option>Nintendo Switch</option></select></div>
@@ -268,6 +273,25 @@ function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(fun
 function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
 function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
 
+var GENRE_PRESETS={
+ 'Casual': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Elastic / 弾む',culture:'Global / Generic',motif:'Toy / 玩具',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Idle':   {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Bouncy / バウンス',culture:'Global / Generic',motif:'Nature / 自然',era:'Contemporary',mood:'Warm',colorSystem:'Pastel / パステル',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Puzzle': {style:'Flat Design（フラットデザイン）',philosophy:'Minimal（削ぎ落とす）',material:'Paper / Cardboard（紙・厚紙）',shape:'薄く軽い',lighting:'フラット',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Playing Card / カード',era:'Timeless',mood:'Minimal',colorSystem:'Monochrome / モノクロ',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
+ 'Gacha':  {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Luxury（高級感）',material:'Crystal / Glass（ガラス・水晶）',shape:'角丸',lighting:'強い光沢',animation:'Bouncy / バウンス',culture:'Japan / 日本',motif:'Jewelry / 宝飾',era:'Contemporary',mood:'Festival',colorSystem:'Dark Jewel Tone / 深い宝石色',decorationRule:'Full Ornamental / 全面装飾',decoration:'Large / 大'},
+ 'RPG':    {style:'Matte 3D（マット3D）',philosophy:'Functional（機能主義）',material:'Leather（革）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Western Europe / 西欧',motif:'Armor / 防具',era:'Medieval',mood:'Adventure',colorSystem:'Earth Colors / アースカラー',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'},
+ 'Fantasy':{style:'2D Illustrated（手描きイラスト）',philosophy:'Craft（手作り感）',material:'Fabric / Felt（布・フェルト）',shape:'角丸',lighting:'柔らかい光沢',animation:'Smooth / なめらか',culture:'Nordic / 北欧',motif:'Forest / 森',era:'Timeless',mood:'Magical',colorSystem:'Natural Craft / 自然素材色',decorationRule:'Pattern Band / 帯状',decoration:'Medium / 中'},
+ 'Action': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'強い光沢',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Weapon / 武器',era:'Near Future',mood:'Heroic',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Strategy':{style:'Flat Design（フラットデザイン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'フラット',animation:'Mechanical / カチッと',culture:'Global / Generic',motif:'Architecture / 建築',era:'Early Modern',mood:'Tense',colorSystem:'Earth Colors / アースカラー',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
+ 'SciFi':  {style:'SF HUD',philosophy:'Functional（機能主義）',material:'Energy / Hologram（ホログラム）',shape:'シャープ',lighting:'ネオン発光',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Machine / 機械',era:'Far Future',mood:'Sci-Fi',colorSystem:'Neon / ネオン',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Horror': {style:'Matte 3D（マット3D）',philosophy:'Craft（手作り感）',material:'Stone（石材）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Eastern Europe / 東欧',motif:'Temple / 神殿',era:'Victorian',mood:'Horror',colorSystem:'Monochrome / モノクロ',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'}
+};
+function applyGenrePreset(){
+ var g=v('gameGenre'); if(!g) return;
+ var p=GENRE_PRESETS[g]; if(!p) return;
+ Object.keys(p).forEach(function(k){if(el(k)) setVal(k,p[k]);});
+ updateDecorationLevel(); autoSetRules(); updateHints(); updateModifierPreview();
+ el('status').textContent=g+' ジャンルのプリセットを適用しました。';
+}
 function applyWireframeTemplate(){
  var t=v('screenType'); var wf='';
  if(t==='Home') wf='+----------------------------------+\n| [HEADER: MENU / CURRENCY]       |\n+----------------------------------+\n| [HERO / PLAYER STATUS]          |\n|                                  |\n| [MAIN CONTENT CARD]             |\n|                                  |\n+----------------------------------+\n| [PRIMARY ACTION BUTTON]         |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
