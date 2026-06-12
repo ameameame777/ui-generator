@@ -73,8 +73,8 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
   <div class="section-title">4. VISUAL SYSTEM</div>
   <div class="grid">
     <div><label>Color System</label><select id="colorSystem"><option selected>Warm Primary Colors / 暖色系原色</option><option>Pastel / パステル</option><option>Earth Colors / アースカラー</option><option>Neon / ネオン</option><option>Monochrome / モノクロ</option><option>Dark Jewel Tone / 深い宝石色</option><option>Natural Craft / 自然素材色</option></select></div>
-    <div><label>Decoration Level</label><select id="decoration" onchange="updateDecorationRule()"><option selected>Standard</option><option>Primitive</option><option>Rich</option><option>Decorative</option></select></div>
-    <div><label>Decoration Rule</label><select id="decorationRule"><option selected>Small Edge Accent / 小さな端装飾</option><option>No Decoration / 装飾なし</option><option>Corner Accent / 角のみ</option><option>Top Center Accent / 上辺中央のみ</option><option>Pattern Band / 帯状模様</option><option>Full Ornamental / 装飾主役</option></select></div>
+    <div><label>Decoration Rule</label><select id="decorationRule" onchange="updateDecorationLevel()"><option selected>Edge Accent / 端装飾</option><option>None / 装飾なし</option><option>Corner Accent / 角装飾</option><option>Top Center Accent / 上辺中央</option><option>Pattern Band / 帯状</option><option>Full Ornamental / 全面装飾</option></select></div>
+    <div id="decorationLevelBox"><label>Decoration Level</label><select id="decoration"><option selected>Small / 小</option><option>Medium / 中</option><option>Large / 大</option></select></div>
   </div>
 
   <div class="section-title">5. SHAPE MODIFIER</div>
@@ -191,12 +191,9 @@ function updateHints(){
  el('worldHint').textContent='Culture / Motif / Era / Mood を組み合わせ、単語ひとつの「世界観」に依存しない構造です。';
  checkConflicts();
 }
-function updateDecorationRule(){
- var d=v('decoration');
- if(d==='Primitive') setVal('decorationRule','No Decoration / 装飾なし');
- if(d==='Standard') setVal('decorationRule','Small Edge Accent / 小さな端装飾');
- if(d==='Rich') setVal('decorationRule','Pattern Band / 帯状模様');
- if(d==='Decorative') setVal('decorationRule','Full Ornamental / 装飾主役');
+function updateDecorationLevel(){
+ var none=v('decorationRule')==='None / 装飾なし';
+ el('decorationLevelBox').classList.toggle('hidden', none);
 }
 function updateModifierPreview(){
  var form=v('formModifier'), edge=v('edgeModifier'), frame=v('frameModifier');
@@ -229,7 +226,8 @@ function rulesText(){
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
 }
 function commonContext(){
- return 'Platform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\nDecoration Level: '+v('decoration')+'\nDecoration Rule: '+v('decorationRule')+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
+ var decStr=v('decorationRule')==='None / 装飾なし'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
+ return 'Platform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
 }
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
@@ -238,12 +236,20 @@ function extraText(){return v('userNote').trim()?(('\nAdditional Instructions:\n
 
 function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
 function decorationGuide(){
- var d=v('decoration'), theme='Decoration motifs must be abstract or geometric, inspired by the selected Motif Source ('+v('motif')+') and Culture ('+v('culture')+'), not literal flowers or characters.';
- if(d==='Primitive') return 'Decoration: none. Components are completely clean with no ornamental elements.';
- if(d==='Standard') return 'Decoration: small. Apply subtle accent motifs sparingly — only at one edge or one corner per component. Motifs must be simple, abstract, and small enough not to compete with the component function. '+theme;
- if(d==='Rich') return 'Decoration: medium. Apply moderate ornamental motifs along edges or framing elements. Motifs can appear on multiple sides but must remain secondary to the component shape. '+theme;
- if(d==='Decorative') return 'Decoration: large. Decoration is a prominent feature of the design. Motifs can fill frames, borders, and accent areas richly, while the component silhouette remains readable. '+theme;
- return '';
+ var rule=v('decorationRule'), level=v('decoration');
+ var theme='Motifs must be abstract or geometric, inspired by the selected Motif Source ('+v('motif')+') and Culture ('+v('culture')+'), not literal flowers or characters.';
+ if(rule==='None / 装飾なし') return 'Decoration: none. Components are completely clean with no ornamental elements.';
+ var placement='';
+ if(rule.indexOf('Edge Accent')>=0) placement='Place motifs along edges or one corner.';
+ if(rule.indexOf('Corner Accent')>=0) placement='Place motifs at corners only.';
+ if(rule.indexOf('Top Center')>=0) placement='Place motifs at the top center edge only.';
+ if(rule.indexOf('Pattern Band')>=0) placement='Apply motifs as a continuous band along one or more edges.';
+ if(rule.indexOf('Full Ornamental')>=0) placement='Decoration fills frames and borders richly; the component silhouette must remain readable.';
+ var density='';
+ if(level==='Small / 小') density='Decoration intensity: small — subtle, minimal presence, never competing with component function.';
+ if(level==='Medium / 中') density='Decoration intensity: medium — moderate presence, clearly visible but secondary to the component shape.';
+ if(level==='Large / 大') density='Decoration intensity: large — prominent and expressive, a key part of the visual identity.';
+ return 'Decoration rule: '+rule+'. '+placement+' '+density+' '+theme;
 }
 function buildComponentSheetPrompt(){return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only.\n'+decorationGuide()+'\nNegative Prompt: '+negativeText()+extraText();}
 function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mobile game screen.\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n\nRequirements:\n- Use simple ASCII boxes.\n- Separate header, main content, primary action, list/content area, and bottom navigation if needed.\n- Optimize for one-handed operation when mobile portrait is selected.\n- Do not describe visual style. Focus only on structure.\n\nCurrent draft wireframe:\n'+v('wireframe')+extraText();}
@@ -255,7 +261,7 @@ function generatePrompt(){
 }
 function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent='コピーしました。'});}
 function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
-function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decoration','Standard');setVal('decorationRule','Small Edge Accent / 小さな端装飾');setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
+function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
 
 function applyWireframeTemplate(){
  var t=v('screenType'); var wf='';
@@ -270,7 +276,7 @@ function applyWireframeTemplate(){
 function checkConflicts(){
  var hits=[];
  if(v('style')==='SF HUD' && (v('motif').indexOf('Toy')>=0||v('material').indexOf('Soft Plastic')>=0)) hits.push('SF HUD と Toy / Soft Plastic は衝突しやすいです。MotifをMachine、MaterialをEnergy/Hologramにすると安定します。');
- if(v('philosophy').indexOf('Minimal')>=0 && (v('decoration')==='Rich'||v('decoration')==='Decorative')) hits.push('Minimal と Rich/Decorative は矛盾します。DecorationをPrimitive/Standardへ。');
+ if(v('philosophy').indexOf('Minimal')>=0 && (v('decoration')==='Medium / 中'||v('decoration')==='Large / 大')) hits.push('Minimal と Medium/Large は矛盾します。Decoration LevelをSmallへ。');
  if(v('style').indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢')) hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
  var box=el('conflictBox'), list=el('conflictList');
  if(hits.length){list.innerHTML=hits.map(function(h){return '<div class="conflict-item">'+h+'</div>'}).join('');box.style.display='block'}else{box.style.display='none'}
@@ -286,7 +292,7 @@ function bindModeButtons(){
  });
 }
 
-function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,ALL_NEG.reduce(function(a,b){a[b]=1;return a},{}),'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();setMode('designSystem');}
+function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,ALL_NEG.reduce(function(a,b){a[b]=1;return a},{}),'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();setMode('designSystem');}
 init();
 </script>
 </body>
