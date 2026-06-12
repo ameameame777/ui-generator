@@ -225,9 +225,14 @@ function rulesText(){
  var rows=[['Corner Radius',v('radius')+'px',checked('lockRadius')],['Stroke Width',v('stroke')+'px',checked('lockStroke')],['Shadow Offset Y',v('shadowY')+'px',checked('lockShadowY')],['Shadow Blur',v('shadowBlur')+'px',checked('lockShadowBlur')],['Button Height',v('buttonHeight')+'px',checked('lockButtonHeight')],['Panel Padding',v('panelPadding')+'px',checked('lockPanelPadding')],['Icon Size',v('iconSize')+'px',checked('lockIconSize')],['Grid Unit',v('gridUnit')+'px',checked('lockGridUnit')]];
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
 }
+function unifiedContext(){
+ var mood=v('mood'), era=v('era'), culture=v('culture'), motif=v('motif');
+ var style=v('style'), philosophy=v('philosophy');
+ return 'This UI belongs to a '+mood+', '+era+' world inspired by '+culture+' aesthetics and '+motif+' motifs.\nVisual identity is defined by '+style+' with '+philosophy+' sensibility.\n';
+}
 function commonContext(){
  var decStr=v('decorationRule')==='None / 装飾なし'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
- return 'Platform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
+ return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
 }
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
@@ -275,9 +280,49 @@ function applyWireframeTemplate(){
 }
 function checkConflicts(){
  var hits=[];
- if(v('style')==='SF HUD' && (v('motif').indexOf('Toy')>=0||v('material').indexOf('Soft Plastic')>=0)) hits.push('SF HUD と Toy / Soft Plastic は衝突しやすいです。MotifをMachine、MaterialをEnergy/Hologramにすると安定します。');
- if(v('philosophy').indexOf('Minimal')>=0 && (v('decoration')==='Medium / 中'||v('decoration')==='Large / 大')) hits.push('Minimal と Medium/Large は矛盾します。Decoration LevelをSmallへ。');
- if(v('style').indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢')) hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
+ var style=v('style'), philosophy=v('philosophy'), mood=v('mood'), era=v('era');
+ var motif=v('motif'), material=v('material'), color=v('colorSystem'), decoration=v('decoration');
+
+ // Style conflicts
+ if(style==='SF HUD' && (motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0||motif.indexOf('Wood Craft')>=0))
+  hits.push('SF HUD と '+motif+' は衝突しやすいです。MotifをMachine / Clockwork / Vehicleにすると安定します。');
+ if(style==='SF HUD' && material.indexOf('Soft Plastic')>=0)
+  hits.push('SF HUD と Soft Plastic は衝突します。MaterialをEnergy/Hologramへ。');
+ if(style.indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢'))
+  hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
+
+ // Philosophy conflicts
+ if(philosophy.indexOf('Minimal')>=0 && (decoration==='Medium / 中'||decoration==='Large / 大'))
+  hits.push('Minimal と Medium/Large Decoration は矛盾します。Decoration LevelをSmallへ。');
+ if(philosophy.indexOf('Toy-Like')>=0 && (mood==='Dark'||mood==='Horror'||mood==='Tense'))
+  hits.push('Toy-Like と '+mood+' は方向性が矛盾します。PhilosophyをFunctionalまたはCraftへ。');
+ if(philosophy.indexOf('Luxury')>=0 && (motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0))
+  hits.push('Luxury と '+motif+' は相性が悪いです。MotifをJewelry / Architecture / Treasureへ。');
+
+ // Era × Motif conflicts
+ var futureEra=(era==='Far Future'||era==='Near Future'||era==='Post Apocalyptic');
+ var ancientEra=(era==='Ancient'||era==='Classical'||era==='Medieval');
+ var craftMotif=(motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0||motif.indexOf('Wood Craft')>=0||motif.indexOf('Paper Craft')>=0);
+ var techMotif=(motif.indexOf('Machine')>=0||motif.indexOf('Clockwork')>=0||motif.indexOf('Vehicle')>=0);
+ if(futureEra && craftMotif)
+  hits.push(era+' と '+motif+' は時代感が矛盾します。MotifをMachine / Space / Weaponへ。');
+ if(ancientEra && techMotif)
+  hits.push(era+' と '+motif+' は時代感が矛盾します。MotifをTemple / Architecture / Folk Artへ。');
+
+ // Era × Era self-conflict
+ if(era==='Ancient' && style==='SF HUD')
+  hits.push('Ancient と SF HUD は時代感が矛盾します。EraをFar Futureへ。');
+
+ // Color × Era/Style conflicts
+ if(color.indexOf('Natural Craft')>=0 && futureEra)
+  hits.push('Natural Craft色 と '+era+' は方向性が矛盾します。ColorをNeon / Dark Jewel Toneへ。');
+ if(color.indexOf('Neon')>=0 && ancientEra)
+  hits.push('Neon と '+era+' は時代感が矛盾します。ColorをEarth Colors / Dark Jewel Toneへ。');
+
+ // Mood × Philosophy conflicts
+ if((mood==='Heroic'||mood==='Adventure'||mood==='Competitive') && philosophy.indexOf('Toy-Like')>=0)
+  hits.push(mood+' Mood と Toy-Like は方向性が噛み合いにくいです。PhilosophyをFunctional / Luxuryへ。');
+
  var box=el('conflictBox'), list=el('conflictList');
  if(hits.length){list.innerHTML=hits.map(function(h){return '<div class="conflict-item">'+h+'</div>'}).join('');box.style.display='block'}else{box.style.display='none'}
 }
