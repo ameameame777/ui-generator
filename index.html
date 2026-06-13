@@ -69,7 +69,6 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
   <div class="section-title">3. WORLD SOURCE</div>
   <div class="grid">
     <div><label>Culture / Region</label><select id="culture" onchange="autoSetRules();updateHints();"><option>Global / Generic</option><option selected>India / インド</option><option>Japan / 日本</option><option>China / 中国</option><option>Korea / 韓国</option><option>Middle East / 中東</option><option>Southeast Asia / 東南アジア</option><option>Nordic / 北欧</option><option>Western Europe / 西欧</option><option>Eastern Europe / 東欧</option><option>Mediterranean / 地中海</option><option>Africa / アフリカ</option><option>Mesoamerica / メソアメリカ</option><option>Ancient Rome / 古代ローマ</option><option>Ancient Greece / 古代ギリシャ</option><option>Victorian Britain / ヴィクトリア朝英国</option></select></div>
-    <div><label>Motif Source</label><select id="motif" onchange="autoSetRules();updateHints();"><option selected>Toy / 玩具</option><option>Board Game / ボードゲーム</option><option>Playing Card / カード</option><option>Wood Craft / 木工</option><option>Paper Craft / 紙工作</option><option>Folk Art / 民芸</option><option>Jewelry / 宝飾</option><option>Architecture / 建築</option><option>Temple / 神殿</option><option>Machine / 機械</option><option>Clockwork / 時計仕掛け</option><option>Vehicle / 乗り物</option><option>Weapon / 武器</option><option>Armor / 防具</option><option>Treasure / 宝物</option><option>Magic Artifact / 魔法具</option><option>Nature / 自然</option><option>Forest / 森</option><option>Ocean / 海</option><option>Desert / 砂漠</option><option>Mountain / 山</option><option>Space / 宇宙</option><option>Food / 食べ物</option><option>Animal / 動物</option><option>Plant / 植物</option></select></div>
     <div><label>Era / Reference</label><select id="era"><option>Ancient</option><option>Classical</option><option>Medieval</option><option>Early Modern</option><option>Industrial</option><option>Victorian</option><option>Retro 1950s</option><option>Retro 1980s</option><option selected>Contemporary</option><option>Near Future</option><option>Far Future</option><option>Post Apocalyptic</option><option>Timeless</option></select></div>
     <div><label>Mood</label><select id="mood" onchange="autoSetRules();"><option selected>Playful</option><option>Festival</option><option>Cute</option><option>Warm</option><option>Cozy</option><option>Peaceful</option><option>Elegant</option><option>Luxury</option><option>Heroic</option><option>Adventure</option><option>Mysterious</option><option>Magical</option><option>Dark</option><option>Horror</option><option>Tense</option><option>Competitive</option><option>Chaotic</option><option>Industrial</option><option>Sci-Fi</option><option>Minimal</option></select></div>
   </div>
@@ -78,6 +77,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
   <div class="section-title">4. VISUAL SYSTEM</div>
   <div class="grid">
     <div><label>Color System</label><select id="colorSystem"><option selected>Warm Primary Colors / 暖色系原色</option><option>Pastel / パステル</option><option>Earth Colors / アースカラー</option><option>Neon / ネオン</option><option>Monochrome / モノクロ</option><option>Dark Jewel Tone / 深い宝石色</option><option>Natural Craft / 自然素材色</option></select></div>
+    <div><label>Motif Source</label><select id="motif"><option selected>Geometric / 幾何学</option><option>Architecture / 建築</option><option>Temple / 神殿</option><option>Gear / ギア</option><option>Armor / 防具</option><option>Jewelry / 宝飾</option><option>Folk Art / 民芸</option><option>Heraldry / 紋章</option><option>Circuit / 回路</option><option>Weave / 織物</option><option>Carving / 彫刻</option><option>Botanical / 植物文様</option></select></div>
     <div><label>Decoration Rule</label><select id="decorationRule" onchange="updateDecorationLevel()"><option selected>Edge Accent / 端装飾</option><option>None / 装飾なし</option><option>Corner Accent / 角装飾</option><option>Top Center Accent / 上辺中央</option><option>Pattern Band / 帯状</option><option>Full Ornamental / 全面装飾</option></select></div>
     <div id="decorationLevelBox"><label>Decoration Level</label><select id="decoration"><option selected>Small / 小</option><option>Medium / 中</option><option>Large / 大</option></select></div>
   </div>
@@ -223,7 +223,6 @@ function autoSetRules(){
  var o={radius:16,stroke:2,shadowY:4,shadowBlur:10,buttonHeight:64,panelPadding:20,iconSize:40,gridUnit:8};
  if(v('style').indexOf('3D Cartoon')>=0||v('philosophy').indexOf('Toy-Like')>=0){o={radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8};}
  if(v('style')==='SF HUD'||v('mood')==='Sci-Fi'){o={radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8}; setVal('edgeModifier','Notch'); setVal('frameModifier','Split Frame')}
- if(v('motif').indexOf('Board Game')>=0){o={radius:16,stroke:3,shadowY:5,shadowBlur:10,buttonHeight:68,panelPadding:24,iconSize:44,gridUnit:8}; setVal('formModifier','Rounded'); setVal('edgeModifier','Chamfer'); setVal('frameModifier','Double Frame')}
  applyRuleObj(o); updateModifierPreview();
 }
 function rulesText(){
@@ -231,13 +230,13 @@ function rulesText(){
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
 }
 function unifiedContext(){
- var mood=v('mood'), era=v('era'), culture=v('culture'), motif=v('motif');
+ var mood=v('mood'), era=v('era'), culture=v('culture');
  var style=v('style'), philosophy=v('philosophy');
- return 'This UI belongs to a '+mood+', '+era+' world inspired by '+culture+' aesthetics and '+motif+' motifs.\nVisual identity is defined by '+style+' with '+philosophy+' sensibility.\n';
+ return 'This UI belongs to a '+mood+', '+era+' world inspired by '+culture+' aesthetics.\nVisual identity is defined by '+style+' with '+philosophy+' sensibility.\n';
 }
 function commonContext(){
  var decStr=v('decorationRule')==='None / 装飾なし'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
- return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nMotif Source: '+v('motif')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
+ return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\nDecoration Motif: '+v('motif')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
 }
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
@@ -272,18 +271,18 @@ function generatePrompt(){
 }
 function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent='コピーしました。'});}
 function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
-function resetToRecommended(){setVal('culture','India / インド');setVal('motif','Toy / 玩具');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
+function resetToRecommended(){setVal('culture','Global / Generic');setVal('motif','Geometric / 幾何学');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
 
 var GENRE_PRESETS={
- 'Casual': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Elastic / 弾む',culture:'Global / Generic',motif:'Toy / 玩具',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Idle':   {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Bouncy / バウンス',culture:'Global / Generic',motif:'Nature / 自然',era:'Contemporary',mood:'Warm',colorSystem:'Pastel / パステル',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Puzzle': {style:'Flat Design（フラットデザイン）',philosophy:'Minimal（削ぎ落とす）',material:'Paper / Cardboard（紙・厚紙）',shape:'薄く軽い',lighting:'フラット',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Playing Card / カード',era:'Timeless',mood:'Minimal',colorSystem:'Monochrome / モノクロ',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
+ 'Casual': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Elastic / 弾む',culture:'Global / Generic',motif:'Geometric / 幾何学',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Idle':   {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Bouncy / バウンス',culture:'Global / Generic',motif:'Botanical / 植物文様',era:'Contemporary',mood:'Warm',colorSystem:'Pastel / パステル',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Puzzle': {style:'Flat Design（フラットデザイン）',philosophy:'Minimal（削ぎ落とす）',material:'Paper / Cardboard（紙・厚紙）',shape:'薄く軽い',lighting:'フラット',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Geometric / 幾何学',era:'Timeless',mood:'Minimal',colorSystem:'Monochrome / モノクロ',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
  'Gacha':  {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Luxury（高級感）',material:'Crystal / Glass（ガラス・水晶）',shape:'角丸',lighting:'強い光沢',animation:'Bouncy / バウンス',culture:'Japan / 日本',motif:'Jewelry / 宝飾',era:'Contemporary',mood:'Festival',colorSystem:'Dark Jewel Tone / 深い宝石色',decorationRule:'Full Ornamental / 全面装飾',decoration:'Large / 大'},
  'RPG':    {style:'Matte 3D（マット3D）',philosophy:'Functional（機能主義）',material:'Leather（革）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Western Europe / 西欧',motif:'Armor / 防具',era:'Medieval',mood:'Adventure',colorSystem:'Earth Colors / アースカラー',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'},
- 'Fantasy':{style:'2D Illustrated（手描きイラスト）',philosophy:'Craft（手作り感）',material:'Fabric / Felt（布・フェルト）',shape:'角丸',lighting:'柔らかい光沢',animation:'Smooth / なめらか',culture:'Nordic / 北欧',motif:'Forest / 森',era:'Timeless',mood:'Magical',colorSystem:'Natural Craft / 自然素材色',decorationRule:'Pattern Band / 帯状',decoration:'Medium / 中'},
- 'Action': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'強い光沢',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Weapon / 武器',era:'Near Future',mood:'Heroic',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'Fantasy':{style:'2D Illustrated（手描きイラスト）',philosophy:'Craft（手作り感）',material:'Fabric / Felt（布・フェルト）',shape:'角丸',lighting:'柔らかい光沢',animation:'Smooth / なめらか',culture:'Nordic / 北欧',motif:'Botanical / 植物文様',era:'Timeless',mood:'Magical',colorSystem:'Natural Craft / 自然素材色',decorationRule:'Pattern Band / 帯状',decoration:'Medium / 中'},
+ 'Action': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'強い光沢',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Heraldry / 紋章',era:'Near Future',mood:'Heroic',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
  'Strategy':{style:'Flat Design（フラットデザイン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'フラット',animation:'Mechanical / カチッと',culture:'Global / Generic',motif:'Architecture / 建築',era:'Early Modern',mood:'Tense',colorSystem:'Earth Colors / アースカラー',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
- 'SciFi':  {style:'SF HUD',philosophy:'Functional（機能主義）',material:'Energy / Hologram（ホログラム）',shape:'シャープ',lighting:'ネオン発光',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Machine / 機械',era:'Far Future',mood:'Sci-Fi',colorSystem:'Neon / ネオン',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
+ 'SciFi':  {style:'SF HUD',philosophy:'Functional（機能主義）',material:'Energy / Hologram（ホログラム）',shape:'シャープ',lighting:'ネオン発光',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Circuit / 回路',era:'Far Future',mood:'Sci-Fi',colorSystem:'Neon / ネオン',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
  'Horror': {style:'Matte 3D（マット3D）',philosophy:'Craft（手作り感）',material:'Stone（石材）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Eastern Europe / 東欧',motif:'Temple / 神殿',era:'Victorian',mood:'Horror',colorSystem:'Monochrome / モノクロ',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'}
 };
 function applyGenrePreset(){
@@ -308,37 +307,28 @@ function checkConflicts(){
  var style=v('style'), philosophy=v('philosophy'), mood=v('mood'), era=v('era');
  var motif=v('motif'), material=v('material'), color=v('colorSystem'), decoration=v('decoration');
 
+ var futureEra=(era==='Far Future'||era==='Near Future'||era==='Post Apocalyptic');
+ var ancientEra=(era==='Ancient'||era==='Classical'||era==='Medieval');
+
  // Style conflicts
- if(style==='SF HUD' && (motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0||motif.indexOf('Wood Craft')>=0))
-  hits.push('SF HUD と '+motif+' は衝突しやすいです。MotifをMachine / Clockwork / Vehicleにすると安定します。');
  if(style==='SF HUD' && material.indexOf('Soft Plastic')>=0)
   hits.push('SF HUD と Soft Plastic は衝突します。MaterialをEnergy/Hologramへ。');
  if(style.indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢'))
   hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
+ if(style==='SF HUD' && (motif.indexOf('Folk Art')>=0||motif.indexOf('Botanical')>=0||motif.indexOf('Weave')>=0))
+  hits.push('SF HUD と '+motif+' は装飾モチーフが衝突します。MotifをCircuit / Gearへ。');
 
  // Philosophy conflicts
  if(philosophy.indexOf('Minimal')>=0 && (decoration==='Medium / 中'||decoration==='Large / 大'))
   hits.push('Minimal と Medium/Large Decoration は矛盾します。Decoration LevelをSmallへ。');
  if(philosophy.indexOf('Toy-Like')>=0 && (mood==='Dark'||mood==='Horror'||mood==='Tense'))
   hits.push('Toy-Like と '+mood+' は方向性が矛盾します。PhilosophyをFunctionalまたはCraftへ。');
- if(philosophy.indexOf('Luxury')>=0 && (motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0))
-  hits.push('Luxury と '+motif+' は相性が悪いです。MotifをJewelry / Architecture / Treasureへ。');
 
- // Era × Motif conflicts
- var futureEra=(era==='Far Future'||era==='Near Future'||era==='Post Apocalyptic');
- var ancientEra=(era==='Ancient'||era==='Classical'||era==='Medieval');
- var craftMotif=(motif.indexOf('Toy')>=0||motif.indexOf('Folk Art')>=0||motif.indexOf('Wood Craft')>=0||motif.indexOf('Paper Craft')>=0);
- var techMotif=(motif.indexOf('Machine')>=0||motif.indexOf('Clockwork')>=0||motif.indexOf('Vehicle')>=0);
- if(futureEra && craftMotif)
-  hits.push(era+' と '+motif+' は時代感が矛盾します。MotifをMachine / Space / Weaponへ。');
- if(ancientEra && techMotif)
-  hits.push(era+' と '+motif+' は時代感が矛盾します。MotifをTemple / Architecture / Folk Artへ。');
-
- // Era × Era self-conflict
+ // Era × Style conflicts
  if(era==='Ancient' && style==='SF HUD')
   hits.push('Ancient と SF HUD は時代感が矛盾します。EraをFar Futureへ。');
 
- // Color × Era/Style conflicts
+ // Color × Era conflicts
  if(color.indexOf('Natural Craft')>=0 && futureEra)
   hits.push('Natural Craft色 と '+era+' は方向性が矛盾します。ColorをNeon / Dark Jewel Toneへ。');
  if(color.indexOf('Neon')>=0 && ancientEra)
