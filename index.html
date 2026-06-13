@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.01</title>
+<title>ゲームUIプロンプト生成ツール v1.02</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.01</h1>
+<h1>ゲームUIプロンプト生成ツール v1.02</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -93,7 +93,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
   <div class="section-title">6. SYSTEM RULES</div>
   <div class="grid">
     <div><label>System Rule Mode</label><select id="ruleMode" onchange="toggleRulesMode();autoSetRules();"><option value="auto" selected>Auto / 選択内容から自動セット</option><option value="preset">Preset / 保存済みシステム</option><option value="manual">Manual / 手入力</option></select></div>
-    <div id="presetBox" class="hidden"><label>Preset</label><select id="systemPreset" onchange="applyPreset()"><option>Indian Toy System v1.0</option><option>Board Game System v1.0</option><option>Cyber HUD System v1.0</option><option>Dark Fantasy System v1.0</option><option>Casual Match3 System v1.0</option><option>Minimal Mobile System v1.0</option></select></div>
+    <div id="presetBox" class="hidden"><label>Preset</label><select id="systemPreset" onchange="applyPreset()"><option>Chunky Soft v1.0</option><option>Rounded Standard v1.0</option><option>Sharp Minimal v1.0</option><option>Heavy Ornate v1.0</option><option>Bouncy Large v1.0</option><option>Flat Compact v1.0</option></select></div>
   </div>
   <div class="grid three" style="margin-top:10px">
     <div class="lock-row"><label>Corner Radius<input id="radius" type="number" value="20"></label><div class="lock"><input type="checkbox" id="lockRadius" checked>Lock</div></div>
@@ -207,12 +207,12 @@ function updateModifierPreview(){
 function modifierRuleText(){return 'Apply modifiers consistently to buttons, panels, tabs, badges, icon frames, and list items. Do not change the component family shape per rarity or state.'}
 
 var PRESETS={
- 'Indian Toy System v1.0':{radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8},
- 'Board Game System v1.0':{radius:16,stroke:3,shadowY:5,shadowBlur:10,buttonHeight:68,panelPadding:24,iconSize:44,gridUnit:8},
- 'Cyber HUD System v1.0':{radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8},
- 'Dark Fantasy System v1.0':{radius:12,stroke:4,shadowY:8,shadowBlur:18,buttonHeight:76,panelPadding:28,iconSize:48,gridUnit:8},
- 'Casual Match3 System v1.0':{radius:24,stroke:3,shadowY:7,shadowBlur:14,buttonHeight:76,panelPadding:24,iconSize:48,gridUnit:8},
- 'Minimal Mobile System v1.0':{radius:12,stroke:1,shadowY:2,shadowBlur:8,buttonHeight:56,panelPadding:20,iconSize:32,gridUnit:8}
+ 'Chunky Soft v1.0':{radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8},
+ 'Rounded Standard v1.0':{radius:16,stroke:3,shadowY:5,shadowBlur:10,buttonHeight:68,panelPadding:24,iconSize:44,gridUnit:8},
+ 'Sharp Minimal v1.0':{radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8},
+ 'Heavy Ornate v1.0':{radius:12,stroke:4,shadowY:8,shadowBlur:18,buttonHeight:76,panelPadding:28,iconSize:48,gridUnit:8},
+ 'Bouncy Large v1.0':{radius:24,stroke:3,shadowY:7,shadowBlur:14,buttonHeight:76,panelPadding:24,iconSize:48,gridUnit:8},
+ 'Flat Compact v1.0':{radius:12,stroke:1,shadowY:2,shadowBlur:8,buttonHeight:56,panelPadding:20,iconSize:32,gridUnit:8}
 };
 function applyRuleObj(o){Object.keys(o).forEach(function(k){if(el(k)) setVal(k,o[k])})}
 function applyPreset(){applyRuleObj(PRESETS[v('systemPreset')]);}
@@ -241,7 +241,7 @@ function commonContext(){
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
 function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
-function extraText(){return v('userNote').trim()?(('\nAdditional Instructions:\n'+v('userNote').trim())):''}
+function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
 
 function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
 function decorationGuide(){
