@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.02</title>
+<title>ゲームUIプロンプト生成ツール v1.03</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.02</h1>
+<h1>ゲームUIプロンプト生成ツール v1.03</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -337,6 +337,39 @@ function checkConflicts(){
  // Mood × Philosophy conflicts
  if((mood==='Heroic'||mood==='Adventure'||mood==='Competitive') && philosophy.indexOf('Toy-Like')>=0)
   hits.push(mood+' Mood と Toy-Like は方向性が噛み合いにくいです。PhilosophyをFunctional / Luxuryへ。');
+
+ // Pixel Art conflicts
+ var shadowBlur=parseInt(v('shadowBlur')||0), shadowY=parseInt(v('shadowY')||0);
+ if(style==='Pixel Art（ピクセルアート）' && (shadowBlur>4||shadowY>4))
+  hits.push('Pixel Art にシャドウブラーは不自然です。Shadow BlurとShadow Offset Yを0〜4へ。');
+ if(style==='Pixel Art（ピクセルアート）' && v('lighting')!=='フラット')
+  hits.push('Pixel Art はLighting: フラット推奨。光沢・グローはピクセル感を壊します。');
+
+ // Paper Cut × Material conflicts
+ if(style==='Paper Cut（切り絵）' && (material.indexOf('Metal')>=0||material.indexOf('Crystal')>=0||material.indexOf('Stone')>=0||material.indexOf('Energy')>=0))
+  hits.push('Paper Cut と '+material+' は素材感が矛盾します。MaterialをPaper / Cardboardへ。');
+
+ // Sticker × Lighting conflicts
+ if(style==='Sticker（ステッカー）' && v('lighting')==='マット')
+  hits.push('Sticker はアウトライン＋光沢が基本です。Lightingはフラットまたは柔らかい光沢推奨。');
+
+ // Redundant Luxury / Minimal
+ if(mood==='Luxury' && philosophy.indexOf('Luxury')>=0)
+  hits.push('Mood と Philosophy 両方に Luxury が設定されています。片方で十分です（Moodは世界観、PhilosophyはUI哲学）。');
+ if(mood==='Minimal' && philosophy.indexOf('Minimal')>=0)
+  hits.push('Mood と Philosophy 両方に Minimal が設定されています。片方で十分です（Moodは世界観、PhilosophyはUI哲学）。');
+
+ // Shape × FormModifier redundancy
+ if(v('shape')==='角丸' && v('formModifier')==='Rounded')
+  hits.push('Shape Language: 角丸 と Form Modifier: Rounded が重複しています。FormModifierをChunkyなど別の値へ。');
+
+ // 2D Illustrated × heavy shadow
+ if(style==='2D Illustrated（手描きイラスト）' && shadowBlur>10)
+  hits.push('2D Illustrated に大きなShadow Blurは不自然です。Shadow Blur 6以下を推奨。');
+
+ // Isometric × Full Ornamental
+ if(style==='Isometric（アイソメトリック）' && v('decorationRule').indexOf('Full Ornamental')>=0)
+  hits.push('Isometric スタイルに Full Ornamental 装飾は視点の制約上ほぼ表現できません。Corner AccentまたはEdge Accentへ。');
 
  var box=el('conflictBox'), list=el('conflictList');
  if(hits.length){list.innerHTML=hits.map(function(h){return '<div class="conflict-item">'+h+'</div>'}).join('');box.style.display='block'}else{box.style.display='none'}
