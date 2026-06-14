@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.04</title>
+<title>ゲームUIプロンプト生成ツール v1.05</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.04</h1>
+<h1>ゲームUIプロンプト生成ツール v1.05</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -244,7 +244,7 @@ function partsText(){return getParts().map(function(p){return '- '+p}).join('\n'
 function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
 function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
 
-function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
+function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\n'+decorationGuide()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
 function decorationGuide(){
  var rule=v('decorationRule'), level=v('decoration');
  var theme='Motifs must be abstract or geometric, inspired by the selected Motif Source ('+v('motif')+') and Culture ('+v('culture')+'), not literal flowers or characters.';
