@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.05</title>
+<title>ゲームUIプロンプト生成ツール v1.1</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.05</h1>
+<h1>ゲームUIプロンプト生成ツール v1.1</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -244,7 +244,8 @@ function partsText(){return getParts().map(function(p){return '- '+p}).join('\n'
 function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
 function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
 
-function buildDesignSystemPrompt(){return 'Create a clean game UI DESIGN SYSTEM reference sheet.\n\nPurpose: define reusable visual rules, not a screen mockup.\n\n'+commonContext()+'\n\n'+decorationGuide()+'\n\nShow only the design rules: color palette, radius, spacing, outline, shadow, highlight, material, depth, decoration rule, and component anatomy.\nDo not create a phone screen, character, mascot, large world illustration, infographic with long text, or decorative background.\nNegative Prompt: '+negativeText()+extraText();}
+function genreText(){var g=v('gameGenre'); return g?('Game Genre: '+g+'\n'):''}
+function buildDesignSystemPrompt(){return 'Create a game UI DESIGN SYSTEM TOKEN SHEET.\n\nPurpose: define reusable visual tokens only — no components, no screen mockup.\n\n'+genreText()+commonContext()+'\n\n'+decorationGuide()+'\n\nShow ONLY these design tokens as labeled swatches and diagrams:\n1. Color palette (5–7 swatches with role labels: Primary, Secondary, Background, Accent, Danger)\n2. Corner radius demo (show the radius value applied to a rectangle)\n3. Shadow demo (offset Y, blur, color)\n4. Stroke / outline weight demo\n5. Grid unit and spacing scale\n6. Material / lighting demo (one surface showing material and lighting treatment)\n7. Decoration rule diagram (placement and intensity, motif style)\n\nDo NOT draw any named UI components (button, panel, tab, etc.), characters, screens, or illustrations.\nNegative Prompt: '+negativeText()+extraText();}
 function decorationGuide(){
  var rule=v('decorationRule'), level=v('decoration');
  var theme='Motifs must be abstract or geometric, inspired by the selected Motif Source ('+v('motif')+') and Culture ('+v('culture')+'), not literal flowers or characters.';
@@ -262,10 +263,11 @@ function decorationGuide(){
  if(level==='Large / 大') density='Decoration intensity: large — prominent and expressive, a key part of the visual identity.';
  return 'Decoration rule: '+rule+'. '+placement+' '+density+' '+integration+' '+theme;
 }
-function buildComponentSheetPrompt(){return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only.\n'+decorationGuide()+'\nNegative Prompt: '+negativeText()+extraText();}
-function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mobile game screen.\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n\nRequirements:\n- Use simple ASCII boxes.\n- Separate header, main content, primary action, list/content area, and bottom navigation if needed.\n- Optimize for one-handed operation when mobile portrait is selected.\n- Do not describe visual style. Focus only on structure.\n\nCurrent draft wireframe:\n'+v('wireframe')+extraText();}
-function buildScreenMockupPrompt(){return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\n'+decorationGuide()+'\nNegative Prompt: no floating decorations, no sticker-like ornaments pasted over frames, '+negativeText()+extraText();}
-function buildPromptPack(){return '[01 DESIGN SYSTEM SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
+function buildComponentSheetPrompt(){return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+genreText()+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only.\n'+decorationGuide()+'\nNegative Prompt: '+negativeText()+extraText();}
+function buildStateSheetPrompt(){return 'Create a game UI STATE SHEET showing all interactive component states.\n\nPurpose: define how each interactive component looks in every state. No screen, no character, no decorative background.\n\n'+genreText()+commonContext()+'\n\nFor each interactive component below, show all 5 states side by side (Normal / Pressed / Disabled / Selected / Locked):\n'+partsText()+'\n\nState rules:\n- Normal: default resting appearance\n- Pressed: darker fill, reduced shadow, slight scale-down (≈95%)\n- Disabled: desaturated, opacity 40–50%, no shadow\n- Selected: accent color border or fill, clear highlight\n- Locked: padlock icon overlay, desaturated, opacity 60%\n\nAll states must use the same radius, stroke, and material. Only color, shadow, and opacity change between states.\n'+decorationGuide()+'\nNegative Prompt: '+negativeText()+extraText();}
+function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mobile game screen.\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n'+(v('gameGenre')?'Game Genre: '+v('gameGenre')+'\n':'')+'\nRequirements:\n- Use simple ASCII boxes.\n- Separate header, main content, primary action, list/content area, and bottom navigation if needed.\n- Optimize for one-handed operation when mobile portrait is selected.\n- Do not describe visual style. Focus only on structure.\n\nCurrent draft wireframe:\n'+v('wireframe')+extraText();}
+function buildScreenMockupPrompt(){return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\n'+decorationGuide()+'\nNegative Prompt: no floating decorations, no sticker-like ornaments pasted over frames, '+negativeText()+extraText();}
+function buildPromptPack(){return '[01 DESIGN SYSTEM SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 STATE SHEET]\n'+buildStateSheetPrompt()+'\n\n---\n\n[04 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[05 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='asciiWireframe')r=buildAsciiWireframePrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
  el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
