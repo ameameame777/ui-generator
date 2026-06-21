@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.13</title>
+<title>ゲームUIプロンプト生成ツール v1.14</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.13</h1>
+<h1>ゲームUIプロンプト生成ツール v1.14</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -247,72 +247,107 @@ function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'
 function genreText(){var g=v('gameGenre'); return g?('Game Genre: '+g+'\n'):''}
 function motifText(){var rule=v('decorationRule'); if(rule==='None / 装飾なし') return ''; return 'Motif Source: '+v('motif')+'\n';}
 
-var DECORATION_PRIMITIVES={
- 'Geometric / 幾何学':'Corner Step — a precise stepped geometric notch cut into the corner of the frame',
- 'Architecture / 建築':'Corner Arch — a miniature arch silhouette embedded into the corner border',
- 'Temple / 神殿':'Corner Gate — a torii-like gate outline carved into the corner edge',
- 'Gear / ギア':'Corner Cog — a small gear tooth pattern along the corner edge',
- 'Armor / 防具':'Corner Shield — a shield-point extension at each corner tip',
- 'Jewelry / 宝飾':'Corner Gem — a faceted gem shape inlaid into the corner',
- 'Folk Art / 民芸':'Corner Seal — a circular stamp motif pressed into the corner area',
- 'Heraldry / 紋章':'Corner Crest — a small heraldic crest cut into the corner border',
- 'Circuit / 回路':'Corner Notch — an L-shaped circuit trace cutout at each corner',
- 'Weave / 織物':'Corner Braid — a short woven braid pattern integrated into the corner edge',
- 'Carving / 彫刻':'Corner Relief — a shallow relief carving integrated into the corner border',
- 'Botanical / 植物文様':'Corner Leaf — a stylized leaf tip emerging from the corner edge'
+// Placement: WHERE decoration appears (derived from Decoration Rule select)
+var PLACEMENT_MAP={
+ 'None / 装飾なし':'None',
+ 'Edge Accent / 端装飾':'Corner',
+ 'Corner Accent / 角装飾':'Corner',
+ 'Top Center Accent / 上辺中央':'Top Center',
+ 'Pattern Band / 帯状':'Mid Edge',
+ 'Full Ornamental / 全面装飾':'Corner'
 };
-function getPrimitive(){
- var rule=v('decorationRule');
- if(rule==='None / 装飾なし') return null;
- var motif=v('motif');
- return DECORATION_PRIMITIVES[motif]||'Corner Step — a precise stepped geometric notch cut into the corner of the frame';
+// Primitive: WHAT shape (derived from Motif Source select)
+var PRIMITIVE_SHAPES={
+ 'Geometric / 幾何学':'Step',
+ 'Architecture / 建築':'Arch',
+ 'Temple / 神殿':'Gate',
+ 'Gear / ギア':'Cog',
+ 'Armor / 防具':'Shield',
+ 'Jewelry / 宝飾':'Gem',
+ 'Folk Art / 民芸':'Seal',
+ 'Heraldry / 紋章':'Crest',
+ 'Circuit / 回路':'Notch',
+ 'Weave / 織物':'Braid',
+ 'Carving / 彫刻':'Relief',
+ 'Botanical / 植物文様':'Leaf'
+};
+function getPlacement(){return PLACEMENT_MAP[v('decorationRule')]||'Corner';}
+function getPrimitiveShape(){
+ if(getPlacement()==='None') return null;
+ return PRIMITIVE_SHAPES[v('motif')]||'Step';
 }
-function primitiveConsistencyBlock(primitive){
- var name=primitive.split(' — ')[0];
- var desc=primitive.split(' — ')[1]||primitive;
- return 'Decoration Primitive: '+name+'\nDecoration Primitive Description: '+desc+'\n'+
-  'Use this single decoration primitive consistently across the ENTIRE UI kit.\n'+
-  'Every button, panel, popup window, tab, icon frame, reward window, scroll list, navigation item, badge, and card must use the same '+name+'.\n'+
-  'The '+name+' is structurally integrated into the frame border — never floating, never placed on top as a sticker or overlay.\n'+
-  'Do not mix gems, seals, notches, arches, ornaments, corner cuts, or any alternative decoration styles.\n'+
-  'Do not invent different decoration shapes for different component types.';
+function decorationLevelText(){
+ var level=v('decoration');
+ if(level==='Small / 小') return 'small — subtle, minimal presence, never competing with component function';
+ if(level==='Medium / 中') return 'medium — moderate presence, clearly visible but secondary to the component shape';
+ if(level==='Large / 大') return 'large — prominent and expressive, a key part of the visual identity';
+ return 'small';
 }
-function primitiveGeometryBlock(primitive){
- var name=primitive.split(' — ')[0];
- return 'Decoration Primitive: '+name+'\nDecoration Primitive Geometry:\n'+
-  '- exactly 3 stepped segments per decorated corner\n'+
-  '- 90-degree geometric steps only\n'+
-  '- same step count across all components\n'+
-  '- same depth ratio across all components\n'+
-  '- same position inside the frame border\n'+
-  '- do not scale, stretch, simplify, or redesign the step shape\n'+
-  '- do not use gems, seals, arches, floral ornaments, random notches, or alternative corner decorations';
+
+function placementRules(placement, shape){
+ if(placement==='None') return 'Decoration Placement: None\nNo decoration may be generated. Components are completely clean with no ornamental elements.';
+ var lines=[];
+ lines.push('Decoration Placement: '+placement);
+ lines.push('Decoration Primitive: '+shape);
+ lines.push('');
+ lines.push('Placement defines WHERE the decoration appears.');
+ lines.push('Primitive defines WHAT shape the decoration uses.');
+ lines.push('Do not infer placement from the primitive.');
+ lines.push('Do not infer primitive from the placement.');
+ lines.push('Treat placement and primitive as independent variables.');
+ lines.push('');
+ if(placement==='Corner'){
+  lines.push('Placement Rule: decoration appears ONLY in corners.');
+  lines.push('Do not place decoration at top center.');
+  lines.push('Do not place decoration at bottom center.');
+  lines.push('Do not place decoration on edge centers.');
+  if(shape==='Step'){
+   lines.push('');
+   lines.push('Corner Step Geometry:');
+   lines.push('- exactly 3 steps per decorated corner');
+   lines.push('- 90-degree geometry only');
+   lines.push('- same step count across all components');
+   lines.push('- same depth ratio across all components');
+   lines.push('- same position inside the frame border');
+   lines.push('- do not scale, stretch, simplify, or redesign the step shape');
+  }
+ } else if(placement==='Top Center'){
+  lines.push('Placement Rule: decoration appears ONCE ONLY, centered on the top edge.');
+  lines.push('Do not place decoration in corners.');
+  lines.push('Do not place decoration at bottom center.');
+  lines.push('Do not repeat decoration elsewhere on the component.');
+  if(shape==='Crest'){
+   lines.push('');
+   lines.push('Top Center Crest Geometry:');
+   lines.push('- centered on top edge');
+   lines.push('- occupies approximately 10% of frame width');
+   lines.push('- integrated into border');
+   lines.push('- appears once only');
+   lines.push('- never appears in corners');
+  }
+ } else if(placement==='Mid Edge'){
+  lines.push('Placement Rule: decoration appears ONLY at the midpoint of edges.');
+  lines.push('Never place decoration in corners.');
+ }
+ lines.push('');
+ lines.push('Decoration intensity: '+decorationLevelText()+'.');
+ lines.push('Decoration must be structurally integrated into the component frame — grown from or carved into the border, not placed on top as a separate floating element.');
+ lines.push('Use '+shape+' consistently for ALL buttons, panels, tabs, icon frames, badges, reward cards, scroll lists, and navigation items.');
+ lines.push('Do not mix different primitive shapes across components.');
+ lines.push('Do not use gems, seals, arches, floral ornaments, notches, or alternative decoration shapes.');
+ return lines.join('\n');
+}
+
+function decorationGuide(){
+ return placementRules(getPlacement(), getPrimitiveShape());
 }
 
 function buildDesignSystemPrompt(){
- var primitive=getPrimitive();
- var decDiagram=primitive
-  ? '7. Decoration rule diagram — show ONE single decoration primitive only: '+primitive.split(' — ')[0]+'. Demonstrate: primitive shape, placement position, scale, integration into frame geometry. Do not show multiple decoration styles.'
-  : '7. Decoration rule: None — components are clean with no ornamental elements.';
+ var placement=getPlacement(), shape=getPrimitiveShape();
+ var decDiagram=(placement!=='None' && shape)
+  ? '7. Decoration diagram — show ONE single Decoration Primitive ('+shape+') at Placement ('+placement+') only. Demonstrate: primitive shape, placement position, scale, integration into frame geometry. Do not show multiple decoration styles or placements.'
+  : '7. Decoration: None — components are clean with no ornamental elements.';
  return 'Create a game UI DESIGN SYSTEM TOKEN SHEET.\n\nPurpose: define reusable visual design tokens only — no UI components, no screen mockup.\n\n'+genreText()+motifText()+commonContext()+'\n\n'+decorationGuide()+'\n\nShow ONLY these 7 token categories as labeled swatches and diagrams on a white studio background:\n1. Color palette — exactly 5 labeled swatches (Primary / Secondary / Background / Accent / Danger). All colors must be derived from the selected Color System: '+v('colorSystem')+'.\n2. Corner radius — show the radius value applied to a rectangle\n3. Shadow — offset Y, blur, and color\n4. Stroke / outline weight\n5. Grid unit and spacing scale\n6. Material / lighting — one flat surface showing material and lighting treatment\n'+decDiagram+'\n\nPresentation: flat reference-sheet layout. White studio background. No environment. No world illustration.\nDo NOT draw any named UI components (button, panel, tab, etc.), characters, mascots, or game screens.\nTreat this as a professional design foundation board, not a UI kit, not a component sheet, and not a game screen.\nNegative Prompt: '+negativeText()+extraText();
-}
-function decorationGuide(){
- var rule=v('decorationRule'), level=v('decoration');
- var integration='Decoration must be structurally integrated into the component frame — grown from or carved into the border, not placed on top as a separate floating element.';
- if(rule==='None / 装飾なし') return 'Decoration: none. Components are completely clean with no ornamental elements.';
- var placement='';
- if(rule.indexOf('Edge Accent')>=0) placement='Place the decoration primitive along edges or corners, seamlessly merged with the frame geometry.';
- if(rule.indexOf('Corner Accent')>=0) placement='Place the decoration primitive at corners only, as extensions of the corner radius structure.';
- if(rule.indexOf('Top Center')>=0) placement='Place the decoration primitive at the top center edge only, embedded into the top border.';
- if(rule.indexOf('Pattern Band')>=0) placement='Apply the decoration primitive as a continuous band along one or more edges, forming part of the frame itself.';
- if(rule.indexOf('Full Ornamental')>=0) placement='The decoration primitive fills frames and borders richly as an integral structure; the component silhouette must remain readable.';
- var density='';
- if(level==='Small / 小') density='Decoration intensity: small — subtle, minimal presence, never competing with component function.';
- if(level==='Medium / 中') density='Decoration intensity: medium — moderate presence, clearly visible but secondary to the component shape.';
- if(level==='Large / 大') density='Decoration intensity: large — prominent and expressive, a key part of the visual identity.';
- var primitive=getPrimitive();
- var consistencyBlock=primitive?('\n'+primitiveConsistencyBlock(primitive)):'';
- return 'Decoration rule: '+rule+'. '+placement+' '+density+' '+integration+consistencyBlock;
 }
 function buildComponentSheetPrompt(){
  return 'Clean game UI COMPONENT SHEET only. No text, no labels, no mascot, no character, no phone mockup, no infographic, no table, no decorative background.\n\n'+genreText()+motifText()+commonContext()+'\n\nReusable Components:\n'+partsText()+'\n\nAll components must share the same design system: radius, stroke, shadow, highlight, material, color, decoration density, and depth.\nShow production-ready reusable UI parts only.\nFor all interactive components (Primary Button, Secondary Button, Icon Button, Tab), show Normal, Pressed, and Disabled states side by side.\n'+decorationGuide()+'\nNegative Prompt: '+negativeText()+extraText();
@@ -322,16 +357,14 @@ function buildStateSheetPrompt(){
 }
 function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mobile game screen.\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n'+genreText()+'\nRequirements:\n- Use simple ASCII boxes.\n- Separate header, main content, primary action, list/content area, and bottom navigation if needed.\n- Optimize for one-handed operation when mobile portrait is selected.\n- Do not describe visual style. Focus only on structure.\n\nCurrent draft wireframe:\n'+v('wireframe')+extraText();}
 function buildScreenMockupPrompt(){
- var primitive=getPrimitive();
  var inheritanceBlock='Before creating the screen mockup, strictly inherit the established Design System Token Sheet and Component Sheet.\n\n'+
   'The screen mockup must be assembled using the same reusable components defined in the Component Sheet.\n'+
   'Treat the Component Sheet as the source of truth.\n'+
   'Do not reinterpret, redesign, simplify, or invent component shapes.\n\n'+
   'All buttons, panels, tabs, currency bars, icon frames, badges, reward cards, scroll lists, and navigation items must match the Component Sheet exactly in:\n'+
-  '- corner radius\n- stroke width\n- shadow depth\n- material\n- highlight style\n- color system\n- frame layering\n- decoration primitive\n- decoration geometry\n- component proportions';
+  '- corner radius\n- stroke width\n- shadow depth\n- material\n- highlight style\n- color system\n- frame layering\n- decoration placement\n- decoration primitive\n- decoration geometry\n- component proportions';
  var consistencyCheck='\n\nConsistency Check:\nThe final screen must look like it was assembled directly from the Component Sheet.\nIf a component appears in the screen, it must visually match the Component Sheet version.\nDo not create a new visual variation for the screen mockup.';
- var primitiveBlock=primitive?('\n\n'+primitiveGeometryBlock(primitive)):'';
- return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+motifText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\n'+decorationGuide()+primitiveBlock+consistencyCheck+'\nNegative Prompt: no floating decorations, no sticker-like ornaments pasted over frames, '+negativeText()+extraText();
+ return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+motifText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: no floating decorations, no sticker-like ornaments pasted over frames, '+negativeText()+extraText();
 }
 function buildPromptPack(){return '[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
