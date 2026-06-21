@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.15</title>
+<title>ゲームUIプロンプト生成ツール v1.16</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.15</h1>
+<h1>ゲームUIプロンプト生成ツール v1.16</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -316,13 +316,18 @@ function placementRules(placement, shape){
   lines.push('Do not place decoration in corners.');
   lines.push('Do not place decoration at bottom center.');
   lines.push('Do not repeat decoration elsewhere on the component.');
+  lines.push('');
+  lines.push('Top Center '+shape+' Geometry:');
+  lines.push('- a flat geometric '+shape.toLowerCase()+' shape carved INTO the top border of the frame');
+  lines.push('- NOT a circle, NOT a dot, NOT a sphere, NOT a coin, NOT a ball');
+  lines.push('- the shape is a notch or indent cut from the top edge, like a staircase profile');
+  lines.push('- centered horizontally on the top border');
+  lines.push('- occupies approximately 10–15% of frame width');
+  lines.push('- integrated flush with the frame border — not floating above it');
+  lines.push('- appears on large containers (panels, popup windows, reward windows) only');
+  lines.push('- small components (buttons, icons, badges, nav items) have NO top center decoration');
   if(shape==='Crest'){
-   lines.push('');
-   lines.push('Top Center Crest Geometry:');
-   lines.push('- centered on top edge');
-   lines.push('- occupies approximately 10% of frame width');
-   lines.push('- integrated into border');
-   lines.push('- appears once only');
+   lines.push('- crest shape: a small heraldic crest silhouette cut into the top border');
    lines.push('- never appears in corners');
   }
  } else if(placement==='Mid Edge'){
@@ -372,7 +377,7 @@ function buildScreenMockupPrompt(){
   '- corner radius\n- stroke width\n- shadow depth\n- material\n- highlight style\n- color system\n- frame layering\n- decoration placement\n- decoration primitive\n- decoration geometry\n- component proportions';
  var consistencyCheck='\n\nConsistency Check:\nThe final screen must look like it was assembled directly from the Component Sheet.\nIf a component appears in the screen, it must visually match the Component Sheet version.\nDo not create a new visual variation for the screen mockup.';
  var placementNeg='no floating decorations, no sticker-like ornaments pasted over frames';
- if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments';
+ if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments, no gold dots, no gold coins, no gold circles, no circular decorations, no spheres on frames, no dot ornaments on buttons or icons';
  if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
  return 'Create a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+motifText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nDo not include world illustrations, landscape art, castle images, character art, or large background illustrations inside panels or cards.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no world illustration, no landscape, no castle, no character art inside panels, '+negativeText()+extraText();
