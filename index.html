@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.17</title>
+<title>ゲームUIプロンプト生成ツール v1.18</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -32,16 +32,21 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 .lock-row{display:grid;grid-template-columns:1fr 112px 58px;gap:8px;align-items:end}.lock-row label{margin:0}.lock-row .lock{display:flex;align-items:center;justify-content:center;height:43px;border:1px solid var(--line);background:var(--field);border-radius:12px;color:var(--muted);font-size:13px;cursor:pointer}.lock input{margin-right:5px;accent-color:var(--blue)}
 .conflict-box{display:none;margin-top:12px;background:#2a1a1a;border:1px solid #c0392b;border-radius:12px;padding:12px 14px}.conflict-title{color:#ff8175;font-size:13px;font-weight:800;margin-bottom:6px}.conflict-item{font-size:12px;color:#e0a0a0;line-height:1.8;padding-left:8px;border-left:2px solid #c0392b;margin-bottom:6px}
 .preview{background:#0c111a;border:1px dashed var(--line);border-radius:12px;padding:12px;color:#aab4c8;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;white-space:pre-wrap;line-height:1.45}
+.header-row{display:flex;align-items:center;gap:12px}
+#langToggle{margin:0;padding:6px 14px;font-size:13px;border-radius:8px;background:#263144;color:var(--text);flex-shrink:0}
 @media(max-width:760px){main{padding:12px}.grid,.grid.three{grid-template-columns:1fr}.mode-toggle{grid-template-columns:1fr}.lock-row{grid-template-columns:1fr 1fr 70px}textarea{min-height:460px}}
 </style>
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.17</h1>
-<p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
+<div class="header-row">
+<h1 data-i18n="title">ゲームUIプロンプト生成ツール v1.18</h1>
+<button id="langToggle" type="button" onclick="toggleLang()">EN</button>
+</div>
+<p class="desc" data-i18n="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
-  <div class="section-title" style="border-top:0;padding-top:0;margin-top:0">1. OUTPUT MODE</div>
+  <div class="section-title" style="border-top:0;padding-top:0;margin-top:0" data-i18n="s1">1. OUTPUT MODE</div>
   <div class="mode-toggle">
     <button type="button" class="mode-btn active" id="btn_designSystem" onclick="setMode('designSystem')">Design System</button>
     <button type="button" class="mode-btn" id="btn_componentSheet" onclick="setMode('componentSheet')">Component Sheet</button>
@@ -50,101 +55,298 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
     <button type="button" class="mode-btn" id="btn_promptPack" onclick="setMode('promptPack')">Prompt Pack</button>
   </div>
 
-  <div class="section-title">GAME GENRE</div>
+  <div class="section-title" data-i18n="sGenre">GAME GENRE</div>
   <div class="grid">
-    <div><label>Genre</label><select id="gameGenre" onchange="applyGenrePreset()"><option value="">-- 選択してください --</option><option value="Casual">Casual / カジュアル</option><option value="Idle">Idle / 放置</option><option value="Puzzle">Puzzle / パズル</option><option value="Gacha">Gacha / ガチャ</option><option value="RPG">RPG</option><option value="Fantasy">Fantasy / ファンタジー</option><option value="Action">Action / アクション</option><option value="Strategy">Strategy / ストラテジー</option><option value="SciFi">Sci-Fi / SF</option><option value="Horror">Horror / ホラー</option></select></div>
+    <div><label data-i18n="lGenre">Genre</label><select id="gameGenre" onchange="applyGenrePreset()">
+      <option value="">-- 選択してください --</option>
+      <option value="Casual">Casual / カジュアル</option>
+      <option value="Idle">Idle / 放置</option>
+      <option value="Puzzle">Puzzle / パズル</option>
+      <option value="Gacha">Gacha / ガチャ</option>
+      <option value="RPG">RPG</option>
+      <option value="Fantasy">Fantasy / ファンタジー</option>
+      <option value="Action">Action / アクション</option>
+      <option value="Strategy">Strategy / ストラテジー</option>
+      <option value="SciFi">Sci-Fi / SF</option>
+      <option value="Horror">Horror / ホラー</option>
+    </select></div>
   </div>
 
-  <div class="section-title">2. STYLE</div>
+  <div class="section-title" data-i18n="s2">2. STYLE</div>
   <div class="grid">
-    <div><label>Platform</label><select id="platform"><option>スマホ縦持ち</option><option>スマホ横持ち</option><option>Steam / PC</option><option>PS5</option><option>Nintendo Switch</option></select></div>
-    <div><label>Visual Style</label><select id="style" onchange="autoSetRules();updateHints();"><option>3D Cartoon（3Dカートゥーン）</option><option>Matte 3D（マット3D）</option><option>Flat Design（フラットデザイン）</option><option>Neumorphism（ニューモーフィズム）</option><option>Skeuomorphism（スキュモーフィズム）</option><option>SF HUD</option><option>2D Illustrated（手描きイラスト）</option><option>Pixel Art（ピクセルアート）</option><option>Isometric（アイソメトリック）</option><option>Paper Cut（切り絵）</option><option>Sticker（ステッカー）</option></select><div id="styleHint" class="hint"></div></div>
-    <div><label>Design Philosophy</label><select id="philosophy" onchange="autoSetRules();updateHints();"><option>Toy-Like（玩具的）</option><option>Functional（機能主義）</option><option>Luxury（高級感）</option><option>Minimal（削ぎ落とす）</option><option>Craft（手作り感）</option></select><div id="philosophyHint" class="hint"></div></div>
-    <div><label>Material</label><select id="material" onchange="updateHints();"><option>Soft Plastic（柔らかいプラスチック）</option><option>Hard Plastic（硬質プラスチック）</option><option>Wood（木材）</option><option>Metal（金属）</option><option>Stone（石材）</option><option>Crystal / Glass（ガラス・水晶）</option><option>Paper / Cardboard（紙・厚紙）</option><option>Fabric / Felt（布・フェルト）</option><option>Leather（革）</option><option>Energy / Hologram（ホログラム）</option></select><div id="materialHint" class="hint"></div></div>
-    <div><label>Shape Language</label><select id="shape"><option>角丸</option><option>太くて厚い</option><option>薄く軽い</option><option>シャープ</option><option>レイヤード</option></select></div>
-    <div><label>Lighting</label><select id="lighting"><option>柔らかい光沢</option><option>フラット</option><option>マット</option><option>強い光沢</option><option>ネオン発光</option></select></div>
-    <div><label>Animation Feel</label><select id="animation"><option>Elastic / 弾む</option><option>Smooth / なめらか</option><option>Snappy / キビキビ</option><option>Bouncy / バウンス</option><option>Mechanical / カチッと</option></select></div>
+    <div><label data-i18n="lPlatform">Platform</label><select id="platform">
+      <option value="Mobile Portrait">スマホ縦持ち</option>
+      <option value="Mobile Landscape">スマホ横持ち</option>
+      <option value="Steam / PC">Steam / PC</option>
+      <option value="PS5">PS5</option>
+      <option value="Nintendo Switch">Nintendo Switch</option>
+    </select></div>
+    <div><label data-i18n="lStyle">Visual Style</label><select id="style" onchange="autoSetRules();updateHints();">
+      <option value="3D Cartoon">3D Cartoon（3Dカートゥーン）</option>
+      <option value="Matte 3D">Matte 3D（マット3D）</option>
+      <option value="Flat Design">Flat Design（フラットデザイン）</option>
+      <option value="Neumorphism">Neumorphism（ニューモーフィズム）</option>
+      <option value="Skeuomorphism">Skeuomorphism（スキュモーフィズム）</option>
+      <option value="SF HUD">SF HUD</option>
+      <option value="2D Illustrated">2D Illustrated（手描きイラスト）</option>
+      <option value="Pixel Art">Pixel Art（ピクセルアート）</option>
+      <option value="Isometric">Isometric（アイソメトリック）</option>
+      <option value="Paper Cut">Paper Cut（切り絵）</option>
+      <option value="Sticker">Sticker（ステッカー）</option>
+    </select><div id="styleHint" class="hint"></div></div>
+    <div><label data-i18n="lPhilosophy">Design Philosophy</label><select id="philosophy" onchange="autoSetRules();updateHints();">
+      <option value="Toy-Like">Toy-Like（玩具的）</option>
+      <option value="Functional">Functional（機能主義）</option>
+      <option value="Luxury">Luxury（高級感）</option>
+      <option value="Minimal">Minimal（削ぎ落とす）</option>
+      <option value="Craft">Craft（手作り感）</option>
+    </select><div id="philosophyHint" class="hint"></div></div>
+    <div><label data-i18n="lMaterial">Material</label><select id="material" onchange="updateHints();">
+      <option value="Soft Plastic">Soft Plastic（柔らかいプラスチック）</option>
+      <option value="Hard Plastic">Hard Plastic（硬質プラスチック）</option>
+      <option value="Wood">Wood（木材）</option>
+      <option value="Metal">Metal（金属）</option>
+      <option value="Stone">Stone（石材）</option>
+      <option value="Crystal / Glass">Crystal / Glass（ガラス・水晶）</option>
+      <option value="Paper / Cardboard">Paper / Cardboard（紙・厚紙）</option>
+      <option value="Fabric / Felt">Fabric / Felt（布・フェルト）</option>
+      <option value="Leather">Leather（革）</option>
+      <option value="Energy / Hologram">Energy / Hologram（ホログラム）</option>
+    </select><div id="materialHint" class="hint"></div></div>
+    <div><label data-i18n="lShape">Shape Language</label><select id="shape">
+      <option value="Rounded">角丸</option>
+      <option value="Chunky">太くて厚い</option>
+      <option value="Thin">薄く軽い</option>
+      <option value="Sharp">シャープ</option>
+      <option value="Layered">レイヤード</option>
+    </select></div>
+    <div><label data-i18n="lLighting">Lighting</label><select id="lighting">
+      <option value="Soft Gloss">柔らかい光沢</option>
+      <option value="Flat">フラット</option>
+      <option value="Matte">マット</option>
+      <option value="Strong Gloss">強い光沢</option>
+      <option value="Neon Glow">ネオン発光</option>
+    </select></div>
+    <div><label data-i18n="lAnimation">Animation Feel</label><select id="animation">
+      <option value="Elastic">Elastic / 弾む</option>
+      <option value="Smooth">Smooth / なめらか</option>
+      <option value="Snappy">Snappy / キビキビ</option>
+      <option value="Bouncy">Bouncy / バウンス</option>
+      <option value="Mechanical">Mechanical / カチッと</option>
+    </select></div>
   </div>
 
-  <div class="section-title">3. WORLD SOURCE</div>
+  <div class="section-title" data-i18n="s3">3. WORLD SOURCE</div>
   <div class="grid">
-    <div><label>Culture / Region</label><select id="culture" onchange="autoSetRules();updateHints();"><option>Global / Generic</option><option selected>India / インド</option><option>Japan / 日本</option><option>China / 中国</option><option>Korea / 韓国</option><option>Middle East / 中東</option><option>Southeast Asia / 東南アジア</option><option>Nordic / 北欧</option><option>Western Europe / 西欧</option><option>Eastern Europe / 東欧</option><option>Mediterranean / 地中海</option><option>Africa / アフリカ</option><option>Mesoamerica / メソアメリカ</option><option>Ancient Rome / 古代ローマ</option><option>Ancient Greece / 古代ギリシャ</option><option>Victorian Britain / ヴィクトリア朝英国</option></select></div>
-    <div><label>Era / Reference</label><select id="era"><option>Ancient</option><option>Classical</option><option>Medieval</option><option>Early Modern</option><option>Industrial</option><option>Victorian</option><option>Retro 1950s</option><option>Retro 1980s</option><option selected>Contemporary</option><option>Near Future</option><option>Far Future</option><option>Post Apocalyptic</option><option>Timeless</option></select></div>
-    <div><label>Mood</label><select id="mood" onchange="autoSetRules();"><option selected>Playful</option><option>Festival</option><option>Cute</option><option>Warm</option><option>Cozy</option><option>Peaceful</option><option>Elegant</option><option>Luxury</option><option>Heroic</option><option>Adventure</option><option>Mysterious</option><option>Magical</option><option>Dark</option><option>Horror</option><option>Tense</option><option>Competitive</option><option>Chaotic</option><option>Industrial</option><option>Sci-Fi</option><option>Minimal</option></select></div>
+    <div><label data-i18n="lCulture">Culture / Region</label><select id="culture" onchange="autoSetRules();updateHints();">
+      <option value="Global / Generic">Global / Generic</option>
+      <option value="India" selected>India / インド</option>
+      <option value="Japan">Japan / 日本</option>
+      <option value="China">China / 中国</option>
+      <option value="Korea">Korea / 韓国</option>
+      <option value="Middle East">Middle East / 中東</option>
+      <option value="Southeast Asia">Southeast Asia / 東南アジア</option>
+      <option value="Nordic">Nordic / 北欧</option>
+      <option value="Western Europe">Western Europe / 西欧</option>
+      <option value="Eastern Europe">Eastern Europe / 東欧</option>
+      <option value="Mediterranean">Mediterranean / 地中海</option>
+      <option value="Africa">Africa / アフリカ</option>
+      <option value="Mesoamerica">Mesoamerica / メソアメリカ</option>
+      <option value="Ancient Rome">Ancient Rome / 古代ローマ</option>
+      <option value="Ancient Greece">Ancient Greece / 古代ギリシャ</option>
+      <option value="Victorian Britain">Victorian Britain / ヴィクトリア朝英国</option>
+    </select></div>
+    <div><label data-i18n="lEra">Era / Reference</label><select id="era">
+      <option value="Ancient">Ancient</option>
+      <option value="Classical">Classical</option>
+      <option value="Medieval">Medieval</option>
+      <option value="Early Modern">Early Modern</option>
+      <option value="Industrial">Industrial</option>
+      <option value="Victorian">Victorian</option>
+      <option value="Retro 1950s">Retro 1950s</option>
+      <option value="Retro 1980s">Retro 1980s</option>
+      <option value="Contemporary" selected>Contemporary</option>
+      <option value="Near Future">Near Future</option>
+      <option value="Far Future">Far Future</option>
+      <option value="Post Apocalyptic">Post Apocalyptic</option>
+      <option value="Timeless">Timeless</option>
+    </select></div>
+    <div><label data-i18n="lMood">Mood</label><select id="mood" onchange="autoSetRules();">
+      <option value="Playful" selected>Playful</option>
+      <option value="Festival">Festival</option>
+      <option value="Cute">Cute</option>
+      <option value="Warm">Warm</option>
+      <option value="Cozy">Cozy</option>
+      <option value="Peaceful">Peaceful</option>
+      <option value="Elegant">Elegant</option>
+      <option value="Luxury">Luxury</option>
+      <option value="Heroic">Heroic</option>
+      <option value="Adventure">Adventure</option>
+      <option value="Mysterious">Mysterious</option>
+      <option value="Magical">Magical</option>
+      <option value="Dark">Dark</option>
+      <option value="Horror">Horror</option>
+      <option value="Tense">Tense</option>
+      <option value="Competitive">Competitive</option>
+      <option value="Chaotic">Chaotic</option>
+      <option value="Industrial">Industrial</option>
+      <option value="Sci-Fi">Sci-Fi</option>
+      <option value="Minimal">Minimal</option>
+    </select></div>
   </div>
   <div id="worldHint" class="hint"></div>
 
-  <div class="section-title">4. VISUAL SYSTEM</div>
+  <div class="section-title" data-i18n="s4">4. VISUAL SYSTEM</div>
   <div class="grid">
-    <div><label>Color System</label><select id="colorSystem"><option selected>Warm Primary Colors / 暖色系原色</option><option>Pastel / パステル</option><option>Earth Colors / アースカラー</option><option>Neon / ネオン</option><option>Monochrome / モノクロ</option><option>Dark Jewel Tone / 深い宝石色</option><option>Natural Craft / 自然素材色</option></select></div>
-    <div><label>Decoration Rule</label><select id="decorationRule" onchange="updateDecorationLevel()"><option selected>Edge Accent / 端装飾</option><option>None / 装飾なし</option><option>Corner Accent / 角装飾</option><option>Top Center Accent / 上辺中央</option><option>Pattern Band / 帯状</option><option>Full Ornamental / 全面装飾</option></select></div>
-    <div id="motifBox"><label>Motif Source</label><select id="motif"><option selected>Geometric / 幾何学</option><option>Architecture / 建築</option><option>Temple / 神殿</option><option>Gear / ギア</option><option>Armor / 防具</option><option>Jewelry / 宝飾</option><option>Folk Art / 民芸</option><option>Heraldry / 紋章</option><option>Circuit / 回路</option><option>Weave / 織物</option><option>Carving / 彫刻</option><option>Botanical / 植物文様</option></select></div>
-    <div id="decorationLevelBox"><label>Decoration Level</label><select id="decoration"><option selected>Small / 小</option><option>Medium / 中</option><option>Large / 大</option></select></div>
+    <div><label data-i18n="lColor">Color System</label><select id="colorSystem">
+      <option value="Warm Primary Colors" selected>Warm Primary Colors / 暖色系原色</option>
+      <option value="Pastel">Pastel / パステル</option>
+      <option value="Earth Colors">Earth Colors / アースカラー</option>
+      <option value="Neon">Neon / ネオン</option>
+      <option value="Monochrome">Monochrome / モノクロ</option>
+      <option value="Dark Jewel Tone">Dark Jewel Tone / 深い宝石色</option>
+      <option value="Natural Craft">Natural Craft / 自然素材色</option>
+    </select></div>
+    <div><label data-i18n="lDecRule">Decoration Rule</label><select id="decorationRule" onchange="updateDecorationLevel()">
+      <option value="Edge Accent" selected>Edge Accent / 端装飾</option>
+      <option value="None">None / 装飾なし</option>
+      <option value="Corner Accent">Corner Accent / 角装飾</option>
+      <option value="Top Center Accent">Top Center Accent / 上辺中央</option>
+      <option value="Pattern Band">Pattern Band / 帯状</option>
+      <option value="Full Ornamental">Full Ornamental / 全面装飾</option>
+    </select></div>
+    <div id="motifBox"><label data-i18n="lMotif">Motif Source</label><select id="motif">
+      <option value="Geometric" selected>Geometric / 幾何学</option>
+      <option value="Architecture">Architecture / 建築</option>
+      <option value="Temple">Temple / 神殿</option>
+      <option value="Gear">Gear / ギア</option>
+      <option value="Armor">Armor / 防具</option>
+      <option value="Jewelry">Jewelry / 宝飾</option>
+      <option value="Folk Art">Folk Art / 民芸</option>
+      <option value="Heraldry">Heraldry / 紋章</option>
+      <option value="Circuit">Circuit / 回路</option>
+      <option value="Weave">Weave / 織物</option>
+      <option value="Carving">Carving / 彫刻</option>
+      <option value="Botanical">Botanical / 植物文様</option>
+    </select></div>
+    <div id="decorationLevelBox"><label data-i18n="lDecLevel">Decoration Level</label><select id="decoration">
+      <option value="Small" selected>Small / 小</option>
+      <option value="Medium">Medium / 中</option>
+      <option value="Large">Large / 大</option>
+    </select></div>
   </div>
 
-  <div class="section-title">5. SHAPE MODIFIER</div>
+  <div class="section-title" data-i18n="s5">5. SHAPE MODIFIER</div>
   <div class="grid three">
-    <div><label>Form Modifier</label><select id="formModifier" onchange="updateModifierPreview()"><option>None</option><option>Rounded</option><option selected>Chunky</option><option>Inflated</option><option>Asymmetric</option><option>Organic</option></select></div>
-    <div><label>Edge Modifier</label><select id="edgeModifier" onchange="updateModifierPreview()"><option selected>None</option><option>Chamfer</option><option>Corner Cut</option><option>Notch</option><option>Scallop</option><option>Stepped</option></select></div>
-    <div><label>Frame Modifier</label><select id="frameModifier" onchange="updateModifierPreview()"><option>None</option><option selected>Layered</option><option>Double Frame</option><option>Floating Frame</option><option>Split Frame</option><option>Bracket Frame</option></select></div>
+    <div><label data-i18n="lFormMod">Form Modifier</label><select id="formModifier" onchange="updateModifierPreview()">
+      <option value="None">None</option>
+      <option value="Rounded">Rounded</option>
+      <option value="Chunky" selected>Chunky</option>
+      <option value="Inflated">Inflated</option>
+      <option value="Asymmetric">Asymmetric</option>
+      <option value="Organic">Organic</option>
+    </select></div>
+    <div><label data-i18n="lEdgeMod">Edge Modifier</label><select id="edgeModifier" onchange="updateModifierPreview()">
+      <option value="None" selected>None</option>
+      <option value="Chamfer">Chamfer</option>
+      <option value="Corner Cut">Corner Cut</option>
+      <option value="Notch">Notch</option>
+      <option value="Scallop">Scallop</option>
+      <option value="Stepped">Stepped</option>
+    </select></div>
+    <div><label data-i18n="lFrameMod">Frame Modifier</label><select id="frameModifier" onchange="updateModifierPreview()">
+      <option value="None">None</option>
+      <option value="Layered" selected>Layered</option>
+      <option value="Double Frame">Double Frame</option>
+      <option value="Floating Frame">Floating Frame</option>
+      <option value="Split Frame">Split Frame</option>
+      <option value="Bracket Frame">Bracket Frame</option>
+    </select></div>
   </div>
   <div id="modifierPreview" class="preview" style="margin-top:10px"></div>
 
-  <div class="section-title">6. SYSTEM RULES</div>
+  <div class="section-title" data-i18n="s6">6. SYSTEM RULES</div>
   <div class="grid">
-    <div><label>System Rule Mode</label><select id="ruleMode" onchange="toggleRulesMode();autoSetRules();"><option value="auto" selected>Auto / 選択内容から自動セット</option><option value="preset">Preset / 保存済みシステム</option><option value="manual">Manual / 手入力</option></select></div>
-    <div id="presetBox" class="hidden"><label>Preset</label><select id="systemPreset" onchange="applyPreset()"><option>Chunky Soft v1.0</option><option>Rounded Standard v1.0</option><option>Sharp Minimal v1.0</option><option>Heavy Ornate v1.0</option><option>Bouncy Large v1.0</option><option>Flat Compact v1.0</option></select></div>
+    <div><label data-i18n="lRuleMode">System Rule Mode</label><select id="ruleMode" onchange="toggleRulesMode();autoSetRules();">
+      <option value="auto" selected>Auto / 選択内容から自動セット</option>
+      <option value="preset">Preset / 保存済みシステム</option>
+      <option value="manual">Manual / 手入力</option>
+    </select></div>
+    <div id="presetBox" class="hidden"><label data-i18n="lPreset">Preset</label><select id="systemPreset" onchange="applyPreset()">
+      <option>Chunky Soft v1.0</option>
+      <option>Rounded Standard v1.0</option>
+      <option>Sharp Minimal v1.0</option>
+      <option>Heavy Ornate v1.0</option>
+      <option>Bouncy Large v1.0</option>
+      <option>Flat Compact v1.0</option>
+    </select></div>
   </div>
   <div class="grid three" style="margin-top:10px">
-    <div class="lock-row"><label>Corner Radius<input id="radius" type="number" value="20"></label><div class="lock"><input type="checkbox" id="lockRadius" checked>Lock</div></div>
-    <div class="lock-row"><label>Stroke Width<input id="stroke" type="number" value="3"></label><div class="lock"><input type="checkbox" id="lockStroke" checked>Lock</div></div>
-    <div class="lock-row"><label>Shadow Offset Y<input id="shadowY" type="number" value="6"></label><div class="lock"><input type="checkbox" id="lockShadowY">Lock</div></div>
-    <div class="lock-row"><label>Shadow Blur<input id="shadowBlur" type="number" value="12"></label><div class="lock"><input type="checkbox" id="lockShadowBlur">Lock</div></div>
-    <div class="lock-row"><label>Button Height<input id="buttonHeight" type="number" value="72"></label><div class="lock"><input type="checkbox" id="lockButtonHeight" checked>Lock</div></div>
-    <div class="lock-row"><label>Panel Padding<input id="panelPadding" type="number" value="24"></label><div class="lock"><input type="checkbox" id="lockPanelPadding">Lock</div></div>
-    <div class="lock-row"><label>Icon Size<input id="iconSize" type="number" value="48"></label><div class="lock"><input type="checkbox" id="lockIconSize">Lock</div></div>
-    <div class="lock-row"><label>Grid Unit<input id="gridUnit" type="number" value="8"></label><div class="lock"><input type="checkbox" id="lockGridUnit" checked>Lock</div></div>
+    <div class="lock-row"><label><span data-i18n="lRadius">Corner Radius</span><input id="radius" type="number" value="20"></label><div class="lock"><input type="checkbox" id="lockRadius" checked><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lStroke">Stroke Width</span><input id="stroke" type="number" value="3"></label><div class="lock"><input type="checkbox" id="lockStroke" checked><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lShadowY">Shadow Offset Y</span><input id="shadowY" type="number" value="6"></label><div class="lock"><input type="checkbox" id="lockShadowY"><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lShadowBlur">Shadow Blur</span><input id="shadowBlur" type="number" value="12"></label><div class="lock"><input type="checkbox" id="lockShadowBlur"><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lBtnH">Button Height</span><input id="buttonHeight" type="number" value="72"></label><div class="lock"><input type="checkbox" id="lockButtonHeight" checked><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lPanelP">Panel Padding</span><input id="panelPadding" type="number" value="24"></label><div class="lock"><input type="checkbox" id="lockPanelPadding"><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lIconSz">Icon Size</span><input id="iconSize" type="number" value="48"></label><div class="lock"><input type="checkbox" id="lockIconSize"><span data-i18n="lockLabel">Lock</span></div></div>
+    <div class="lock-row"><label><span data-i18n="lGrid">Grid Unit</span><input id="gridUnit" type="number" value="8"></label><div class="lock"><input type="checkbox" id="lockGridUnit" checked><span data-i18n="lockLabel">Lock</span></div></div>
   </div>
 
-  <div class="section-title components-section">7. COMPONENT SELECTOR</div>
+  <div class="section-title components-section" data-i18n="s7">7. COMPONENT SELECTOR</div>
   <div class="parts-scroll components-section"><div class="parts-list" id="partsList"></div></div>
 
-  <div class="section-title">UX GOAL</div>
+  <div class="section-title" data-i18n="sUX">UX GOAL</div>
   <div class="parts-scroll"><div class="parts-list" id="uxList"></div></div>
 
   <div id="screenSettings" class="hidden">
-    <div class="section-title">8. SCREEN SETTINGS</div>
+    <div class="section-title" data-i18n="s8">8. SCREEN SETTINGS</div>
     <div class="grid">
-      <div><label>Screen Type</label><select id="screenType" onchange="applyWireframeTemplate()"><option>Home</option><option>Shop</option><option>Gacha</option><option>Reward</option><option>Event</option><option>Mission</option><option>Inventory</option></select></div>
-      <div><label>Layout Priority</label><select id="layoutPriority"><option>Bottom Action Focus / 下部操作重視</option><option>Information Density / 情報密度重視</option><option>Hero Visual Focus / ビジュアル重視</option><option>List Browsing / リスト閲覧重視</option></select></div>
-      <div><label>Safe Area</label><select id="safeArea"><option>Enabled / セーフエリア有効</option><option>Disabled / セーフエリア指定なし</option></select></div>
-      <div><label>Wireframe Template</label><button class="ghost" onclick="applyWireframeTemplate()" type="button">テンプレート反映</button></div>
+      <div><label data-i18n="lScreenType">Screen Type</label><select id="screenType" onchange="applyWireframeTemplate()">
+        <option value="Home">Home</option>
+        <option value="Shop">Shop</option>
+        <option value="Gacha">Gacha</option>
+        <option value="Reward">Reward</option>
+        <option value="Event">Event</option>
+        <option value="Mission">Mission</option>
+        <option value="Inventory">Inventory</option>
+      </select></div>
+      <div><label data-i18n="lLayout">Layout Priority</label><select id="layoutPriority">
+        <option value="Bottom Action Focus">Bottom Action Focus / 下部操作重視</option>
+        <option value="Information Density">Information Density / 情報密度重視</option>
+        <option value="Hero Visual Focus">Hero Visual Focus / ビジュアル重視</option>
+        <option value="List Browsing">List Browsing / リスト閲覧重視</option>
+      </select></div>
+      <div><label data-i18n="lSafeArea">Safe Area</label><select id="safeArea">
+        <option value="Enabled">Enabled / セーフエリア有効</option>
+        <option value="Disabled">Disabled / セーフエリア指定なし</option>
+      </select></div>
+      <div><label data-i18n="lWireTpl">Wireframe Template</label><button class="ghost" onclick="applyWireframeTemplate()" type="button" data-i18n="btnWireTpl">テンプレート反映</button></div>
     </div>
-    <label style="margin-top:10px">ASCII Wireframe</label>
+    <label style="margin-top:10px" data-i18n="lWireframe">ASCII Wireframe</label>
     <textarea id="wireframe" class="small"></textarea>
   </div>
 
-  <div class="section-title">9. NEGATIVE PROMPT BUILDER</div>
+  <div class="section-title" data-i18n="s9">9. NEGATIVE PROMPT BUILDER</div>
   <div class="parts-scroll"><div class="parts-list" id="negList"></div></div>
-  <div><label style="margin-top:10px">Culture Avoid Rules</label><input id="cultureAvoid" type="text" value="landmarks, religious symbols, stereotype motifs, mascot dominance"></div>
+  <div><label style="margin-top:10px" data-i18n="lCultureAvoid">Culture Avoid Rules</label><input id="cultureAvoid" type="text" value="landmarks, religious symbols, stereotype motifs, mascot dominance"></div>
 
-  <div class="section-title">追加指示</div>
-  <textarea id="userNote" class="small" placeholder="例：ボタンの角丸は20px固定。レアリティ差分は色のみ変更。など"></textarea>
+  <div class="section-title" data-i18n="sNote">追加指示</div>
+  <textarea id="userNote" class="small" data-i18n-placeholder="notePlaceholder" placeholder="例：ボタンの角丸は20px固定。レアリティ差分は色のみ変更。など"></textarea>
 
-  <div id="conflictBox" class="conflict-box"><div class="conflict-title">⚠️ 組み合わせの注意</div><div id="conflictList"></div></div>
+  <div id="conflictBox" class="conflict-box"><div class="conflict-title" data-i18n="conflictTitle">⚠️ 組み合わせの注意</div><div id="conflictList"></div></div>
 
   <div style="margin-top:14px">
-    <button onclick="generatePrompt()">プロンプト生成</button>
-    <button class="secondary" onclick="copyPrompt()">コピー</button>
-    <button onclick="selectPrompt()">全文選択</button>
-    <button class="ghost" onclick="resetToRecommended()">推奨値へ戻す</button>
+    <button onclick="generatePrompt()" data-i18n="btnGenerate">プロンプト生成</button>
+    <button class="secondary" onclick="copyPrompt()" data-i18n="btnCopy">コピー</button>
+    <button onclick="selectPrompt()" data-i18n="btnSelect">全文選択</button>
+    <button class="ghost" onclick="resetToRecommended()" data-i18n="btnReset">推奨値へ戻す</button>
   </div>
-  <p id="status" class="note">Output Modeを選択できます。選択後に「プロンプト生成」を押してください。</p>
+  <p id="status" class="note" data-i18n="statusInit">Output Modeを選択できます。選択後に「プロンプト生成」を押してください。</p>
 </div>
 
 <div class="card">
-  <label>生成プロンプト</label>
-  <textarea id="output">（「プロンプト生成」ボタンを押すと表示されます）</textarea>
+  <label data-i18n="lGenerated">生成プロンプト</label>
+  <textarea id="output" data-i18n-placeholder="outputPlaceholder">（「プロンプト生成」ボタンを押すと表示されます）</textarea>
 </div>
 </main>
 <script>
@@ -153,16 +355,161 @@ function v(id){return el(id).value}
 function checked(id){return el(id).checked}
 function setVal(id,val){el(id).value=val}
 
+var currentLang='ja';
 var currentMode='designSystem';
 var ALL_PARTS=['Primary Button','Secondary Button','Icon Button','Panel','Popup Window','Tab','Currency UI','Badge','Icon Frame','Reward Window','Scroll List','Health Bar','Progress Bar','Toast / Alert','Loading Spinner','Tooltip','Slider','Toggle Switch','Input Field','Header Bar'];
 var DEFAULT_PARTS={'Primary Button':1,'Secondary Button':1,'Icon Button':1,'Panel':1,'Popup Window':1,'Tab':1,'Currency UI':1,'Badge':1,'Icon Frame':1,'Reward Window':1,'Scroll List':1};
-var ALL_UX=['達成感','収集欲','驚き','癒やし','没入感','高揚感','緊張感','爽快感','愛着','競争心'];
+var ALL_UX_EN=['Achievement','Collecting','Surprise','Relaxation','Immersion','Excitement','Tension','Exhilaration','Attachment','Competition'];
+var UX_JA={'Achievement':'達成感','Collecting':'収集欲','Surprise':'驚き','Relaxation':'癒やし','Immersion':'没入感','Excitement':'高揚感','Tension':'緊張感','Exhilaration':'爽快感','Attachment':'愛着','Competition':'競争心'};
 var ALL_NEG=['no text','no labels','no mascot','no character','no phone mockup','no infographic','no table','no decorative background','no excessive ornament','no full pattern fill','no realistic material','no metallic texture unless selected','no glass unless selected'];
 
+var LANG={
+ ja:{
+  title:'ゲームUIプロンプト生成ツール v1.18',
+  desc:'Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。',
+  s1:'1. OUTPUT MODE',sGenre:'GAME GENRE',s2:'2. STYLE',s3:'3. WORLD SOURCE',
+  s4:'4. VISUAL SYSTEM',s5:'5. SHAPE MODIFIER',s6:'6. SYSTEM RULES',
+  s7:'7. COMPONENT SELECTOR',sUX:'UX GOAL',s8:'8. SCREEN SETTINGS',
+  s9:'9. NEGATIVE PROMPT BUILDER',sNote:'追加指示',
+  lGenre:'Genre',lPlatform:'Platform',lStyle:'Visual Style',lPhilosophy:'Design Philosophy',
+  lMaterial:'Material',lShape:'Shape Language',lLighting:'Lighting',lAnimation:'Animation Feel',
+  lCulture:'Culture / Region',lEra:'Era / Reference',lMood:'Mood',
+  lColor:'Color System',lDecRule:'Decoration Rule',lMotif:'Motif Source',lDecLevel:'Decoration Level',
+  lFormMod:'Form Modifier',lEdgeMod:'Edge Modifier',lFrameMod:'Frame Modifier',
+  lRuleMode:'System Rule Mode',lPreset:'Preset',
+  lRadius:'Corner Radius',lStroke:'Stroke Width',lShadowY:'Shadow Offset Y',lShadowBlur:'Shadow Blur',
+  lBtnH:'Button Height',lPanelP:'Panel Padding',lIconSz:'Icon Size',lGrid:'Grid Unit',
+  lScreenType:'Screen Type',lLayout:'Layout Priority',lSafeArea:'Safe Area',lWireframe:'ASCII Wireframe',
+  lWireTpl:'Wireframe Template',lCultureAvoid:'Culture Avoid Rules',lGenerated:'生成プロンプト',
+  notePlaceholder:'例：ボタンの角丸は20px固定。レアリティ差分は色のみ変更。など',
+  btnGenerate:'プロンプト生成',btnCopy:'コピー',btnSelect:'全文選択',btnReset:'推奨値へ戻す',
+  btnWireTpl:'テンプレート反映',lockLabel:'Lock',
+  statusInit:'Output Modeを選択できます。選択後に「プロンプト生成」を押してください。',
+  statusGenerated:'プロンプトを生成しました。',statusCopied:'コピーしました。',
+  statusSelected:'全文選択しました。',statusReset:'推奨値に戻しました。',
+  outputPlaceholder:'（「プロンプト生成」ボタンを押すと表示されます）',
+  conflictTitle:'⚠️ 組み合わせの注意',
+  worldHint:'Culture / Motif / Era / Mood を組み合わせ、単語ひとつの「世界観」に依存しない構造です。',
+  opts:{
+   gameGenre:{'':'-- 選択してください --','Casual':'Casual / カジュアル','Idle':'Idle / 放置','Puzzle':'Puzzle / パズル','Gacha':'Gacha / ガチャ','RPG':'RPG','Fantasy':'Fantasy / ファンタジー','Action':'Action / アクション','Strategy':'Strategy / ストラテジー','SciFi':'Sci-Fi / SF','Horror':'Horror / ホラー'},
+   platform:{'Mobile Portrait':'スマホ縦持ち','Mobile Landscape':'スマホ横持ち','Steam / PC':'Steam / PC','PS5':'PS5','Nintendo Switch':'Nintendo Switch'},
+   style:{'3D Cartoon':'3D Cartoon（3Dカートゥーン）','Matte 3D':'Matte 3D（マット3D）','Flat Design':'Flat Design（フラットデザイン）','Neumorphism':'Neumorphism（ニューモーフィズム）','Skeuomorphism':'Skeuomorphism（スキュモーフィズム）','SF HUD':'SF HUD','2D Illustrated':'2D Illustrated（手描きイラスト）','Pixel Art':'Pixel Art（ピクセルアート）','Isometric':'Isometric（アイソメトリック）','Paper Cut':'Paper Cut（切り絵）','Sticker':'Sticker（ステッカー）'},
+   philosophy:{'Toy-Like':'Toy-Like（玩具的）','Functional':'Functional（機能主義）','Luxury':'Luxury（高級感）','Minimal':'Minimal（削ぎ落とす）','Craft':'Craft（手作り感）'},
+   material:{'Soft Plastic':'Soft Plastic（柔らかいプラスチック）','Hard Plastic':'Hard Plastic（硬質プラスチック）','Wood':'Wood（木材）','Metal':'Metal（金属）','Stone':'Stone（石材）','Crystal / Glass':'Crystal / Glass（ガラス・水晶）','Paper / Cardboard':'Paper / Cardboard（紙・厚紙）','Fabric / Felt':'Fabric / Felt（布・フェルト）','Leather':'Leather（革）','Energy / Hologram':'Energy / Hologram（ホログラム）'},
+   shape:{'Rounded':'角丸','Chunky':'太くて厚い','Thin':'薄く軽い','Sharp':'シャープ','Layered':'レイヤード'},
+   lighting:{'Soft Gloss':'柔らかい光沢','Flat':'フラット','Matte':'マット','Strong Gloss':'強い光沢','Neon Glow':'ネオン発光'},
+   animation:{'Elastic':'Elastic / 弾む','Smooth':'Smooth / なめらか','Snappy':'Snappy / キビキビ','Bouncy':'Bouncy / バウンス','Mechanical':'Mechanical / カチッと'},
+   culture:{'Global / Generic':'Global / Generic','India':'India / インド','Japan':'Japan / 日本','China':'China / 中国','Korea':'Korea / 韓国','Middle East':'Middle East / 中東','Southeast Asia':'Southeast Asia / 東南アジア','Nordic':'Nordic / 北欧','Western Europe':'Western Europe / 西欧','Eastern Europe':'Eastern Europe / 東欧','Mediterranean':'Mediterranean / 地中海','Africa':'Africa / アフリカ','Mesoamerica':'Mesoamerica / メソアメリカ','Ancient Rome':'Ancient Rome / 古代ローマ','Ancient Greece':'Ancient Greece / 古代ギリシャ','Victorian Britain':'Victorian Britain / ヴィクトリア朝英国'},
+   colorSystem:{'Warm Primary Colors':'Warm Primary Colors / 暖色系原色','Pastel':'Pastel / パステル','Earth Colors':'Earth Colors / アースカラー','Neon':'Neon / ネオン','Monochrome':'Monochrome / モノクロ','Dark Jewel Tone':'Dark Jewel Tone / 深い宝石色','Natural Craft':'Natural Craft / 自然素材色'},
+   decorationRule:{'Edge Accent':'Edge Accent / 端装飾','None':'None / 装飾なし','Corner Accent':'Corner Accent / 角装飾','Top Center Accent':'Top Center Accent / 上辺中央','Pattern Band':'Pattern Band / 帯状','Full Ornamental':'Full Ornamental / 全面装飾'},
+   motif:{'Geometric':'Geometric / 幾何学','Architecture':'Architecture / 建築','Temple':'Temple / 神殿','Gear':'Gear / ギア','Armor':'Armor / 防具','Jewelry':'Jewelry / 宝飾','Folk Art':'Folk Art / 民芸','Heraldry':'Heraldry / 紋章','Circuit':'Circuit / 回路','Weave':'Weave / 織物','Carving':'Carving / 彫刻','Botanical':'Botanical / 植物文様'},
+   decoration:{'Small':'Small / 小','Medium':'Medium / 中','Large':'Large / 大'},
+   ruleMode:{'auto':'Auto / 選択内容から自動セット','preset':'Preset / 保存済みシステム','manual':'Manual / 手入力'},
+   layoutPriority:{'Bottom Action Focus':'Bottom Action Focus / 下部操作重視','Information Density':'Information Density / 情報密度重視','Hero Visual Focus':'Hero Visual Focus / ビジュアル重視','List Browsing':'List Browsing / リスト閲覧重視'},
+   safeArea:{'Enabled':'Enabled / セーフエリア有効','Disabled':'Disabled / セーフエリア指定なし'}
+  }
+ },
+ en:{
+  title:'Game UI Prompt Generator v1.18',
+  desc:'Separates Style / Culture / Motif / System. Each Output Mode only references relevant fields.',
+  s1:'1. OUTPUT MODE',sGenre:'GAME GENRE',s2:'2. STYLE',s3:'3. WORLD SOURCE',
+  s4:'4. VISUAL SYSTEM',s5:'5. SHAPE MODIFIER',s6:'6. SYSTEM RULES',
+  s7:'7. COMPONENT SELECTOR',sUX:'UX GOAL',s8:'8. SCREEN SETTINGS',
+  s9:'9. NEGATIVE PROMPT BUILDER',sNote:'Additional Notes',
+  lGenre:'Genre',lPlatform:'Platform',lStyle:'Visual Style',lPhilosophy:'Design Philosophy',
+  lMaterial:'Material',lShape:'Shape Language',lLighting:'Lighting',lAnimation:'Animation Feel',
+  lCulture:'Culture / Region',lEra:'Era / Reference',lMood:'Mood',
+  lColor:'Color System',lDecRule:'Decoration Rule',lMotif:'Motif Source',lDecLevel:'Decoration Level',
+  lFormMod:'Form Modifier',lEdgeMod:'Edge Modifier',lFrameMod:'Frame Modifier',
+  lRuleMode:'System Rule Mode',lPreset:'Preset',
+  lRadius:'Corner Radius',lStroke:'Stroke Width',lShadowY:'Shadow Offset Y',lShadowBlur:'Shadow Blur',
+  lBtnH:'Button Height',lPanelP:'Panel Padding',lIconSz:'Icon Size',lGrid:'Grid Unit',
+  lScreenType:'Screen Type',lLayout:'Layout Priority',lSafeArea:'Safe Area',lWireframe:'ASCII Wireframe',
+  lWireTpl:'Wireframe Template',lCultureAvoid:'Culture Avoid Rules',lGenerated:'Generated Prompt',
+  notePlaceholder:'e.g. Button corner radius fixed at 20px. Rarity differences use color only.',
+  btnGenerate:'Generate Prompt',btnCopy:'Copy',btnSelect:'Select All',btnReset:'Reset to Recommended',
+  btnWireTpl:'Apply Template',lockLabel:'Lock',
+  statusInit:'Select Output Mode, then press "Generate Prompt".',
+  statusGenerated:'Prompt generated.',statusCopied:'Copied to clipboard.',
+  statusSelected:'All text selected.',statusReset:'Reset to recommended values.',
+  outputPlaceholder:'(Press "Generate Prompt" to display)',
+  conflictTitle:'⚠️ Combination Warning',
+  worldHint:'Combine Culture / Motif / Era / Mood — no single world-concept dependency.',
+  opts:{
+   gameGenre:{'':'-- Select --','Casual':'Casual','Idle':'Idle','Puzzle':'Puzzle','Gacha':'Gacha','RPG':'RPG','Fantasy':'Fantasy','Action':'Action','Strategy':'Strategy','SciFi':'Sci-Fi','Horror':'Horror'},
+   platform:{'Mobile Portrait':'Mobile Portrait','Mobile Landscape':'Mobile Landscape','Steam / PC':'Steam / PC','PS5':'PS5','Nintendo Switch':'Nintendo Switch'},
+   style:{'3D Cartoon':'3D Cartoon','Matte 3D':'Matte 3D','Flat Design':'Flat Design','Neumorphism':'Neumorphism','Skeuomorphism':'Skeuomorphism','SF HUD':'SF HUD','2D Illustrated':'2D Illustrated','Pixel Art':'Pixel Art','Isometric':'Isometric','Paper Cut':'Paper Cut','Sticker':'Sticker'},
+   philosophy:{'Toy-Like':'Toy-Like','Functional':'Functional','Luxury':'Luxury','Minimal':'Minimal','Craft':'Craft'},
+   material:{'Soft Plastic':'Soft Plastic','Hard Plastic':'Hard Plastic','Wood':'Wood','Metal':'Metal','Stone':'Stone','Crystal / Glass':'Crystal / Glass','Paper / Cardboard':'Paper / Cardboard','Fabric / Felt':'Fabric / Felt','Leather':'Leather','Energy / Hologram':'Energy / Hologram'},
+   shape:{'Rounded':'Rounded','Chunky':'Chunky','Thin':'Thin & Light','Sharp':'Sharp','Layered':'Layered'},
+   lighting:{'Soft Gloss':'Soft Gloss','Flat':'Flat','Matte':'Matte','Strong Gloss':'Strong Gloss','Neon Glow':'Neon Glow'},
+   animation:{'Elastic':'Elastic','Smooth':'Smooth','Snappy':'Snappy','Bouncy':'Bouncy','Mechanical':'Mechanical'},
+   culture:{'Global / Generic':'Global / Generic','India':'India','Japan':'Japan','China':'China','Korea':'Korea','Middle East':'Middle East','Southeast Asia':'Southeast Asia','Nordic':'Nordic','Western Europe':'Western Europe','Eastern Europe':'Eastern Europe','Mediterranean':'Mediterranean','Africa':'Africa','Mesoamerica':'Mesoamerica','Ancient Rome':'Ancient Rome','Ancient Greece':'Ancient Greece','Victorian Britain':'Victorian Britain'},
+   colorSystem:{'Warm Primary Colors':'Warm Primary Colors','Pastel':'Pastel','Earth Colors':'Earth Colors','Neon':'Neon','Monochrome':'Monochrome','Dark Jewel Tone':'Dark Jewel Tone','Natural Craft':'Natural Craft'},
+   decorationRule:{'Edge Accent':'Edge Accent','None':'None','Corner Accent':'Corner Accent','Top Center Accent':'Top Center Accent','Pattern Band':'Pattern Band','Full Ornamental':'Full Ornamental'},
+   motif:{'Geometric':'Geometric','Architecture':'Architecture','Temple':'Temple','Gear':'Gear','Armor':'Armor','Jewelry':'Jewelry','Folk Art':'Folk Art','Heraldry':'Heraldry','Circuit':'Circuit','Weave':'Weave','Carving':'Carving','Botanical':'Botanical'},
+   decoration:{'Small':'Small','Medium':'Medium','Large':'Large'},
+   ruleMode:{'auto':'Auto','preset':'Preset','manual':'Manual'},
+   layoutPriority:{'Bottom Action Focus':'Bottom Action Focus','Information Density':'Information Density','Hero Visual Focus':'Hero Visual Focus','List Browsing':'List Browsing'},
+   safeArea:{'Enabled':'Enabled','Disabled':'Disabled'}
+  }
+ }
+};
+
+var SELECT_IDS=['gameGenre','platform','style','philosophy','material','shape','lighting','animation','culture','colorSystem','decorationRule','motif','decoration','ruleMode','layoutPriority','safeArea'];
+
+function setLang(lang){
+ currentLang=lang;
+ var L=LANG[lang];
+ document.documentElement.lang=(lang==='ja'?'ja':'en');
+ el('langToggle').textContent=(lang==='ja'?'EN':'JP');
+ // static text
+ document.querySelectorAll('[data-i18n]').forEach(function(x){
+  var k=x.dataset.i18n; if(L[k]!==undefined) x.textContent=L[k];
+ });
+ // placeholders
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(function(x){
+  var k=x.dataset.i18nPlaceholder; if(L[k]!==undefined) x.placeholder=L[k];
+ });
+ // select options
+ SELECT_IDS.forEach(function(sid){
+  var sel=el(sid); if(!sel||!L.opts[sid]) return;
+  var cur=sel.value;
+  Array.from(sel.options).forEach(function(opt){
+   var tx=L.opts[sid][opt.value]; if(tx!==undefined) opt.textContent=tx;
+  });
+  sel.value=cur;
+ });
+ // UX chips: rebuild with new labels
+ rebuildUxChips();
+ // update output placeholder only if output is still default
+ var outEl=el('output');
+ if(outEl.value===LANG['ja'].outputPlaceholder||outEl.value===LANG['en'].outputPlaceholder){
+  outEl.value=L.outputPlaceholder;
+ }
+ updateHints();
+}
+
+function toggleLang(){setLang(currentLang==='ja'?'en':'ja');}
+
 var HINTS={
- style:{'3D Cartoon（3Dカートゥーン）':'誇張された立体感・鮮やかな色・デフォルメされた光沢。','Matte 3D（マット3D）':'光沢を抑えた柔らかい3D。マット素材と相性が良い。','SF HUD':'透過、グロー、スキャンライン、幾何学的UI。'},
- philosophy:{'Toy-Like（玩具的）':'触りたくなる厚み、丸み、押した時の弾力を優先。','Functional（機能主義）':'装飾より視認性・階層・導線を優先。','Luxury（高級感）':'余白・素材・細部精度で価値を伝える。','Minimal（削ぎ落とす）':'形、色、余白だけで成立させる。','Craft（手作り感）':'手作りの揺らぎと温かみを許容する。'},
- material:{'Soft Plastic（柔らかいプラスチック）':'安全・親しみ・カジュアル。玩具的UIに向く。','Energy / Hologram（ホログラム）':'半透明発光面、エッジグロー、非物質感。','Crystal / Glass（ガラス・水晶）':'透明感、屈折、シャープなハイライト。'}
+ style:{
+  '3D Cartoon':{ja:'誇張された立体感・鮮やかな色・デフォルメされた光沢。',en:'Exaggerated depth, vivid colors, deformed gloss.'},
+  'Matte 3D':{ja:'光沢を抑えた柔らかい3D。マット素材と相性が良い。',en:'Soft 3D with suppressed gloss. Pairs well with matte materials.'},
+  'SF HUD':{ja:'透過、グロー、スキャンライン、幾何学的UI。',en:'Transparency, glow, scanlines, geometric UI.'}
+ },
+ philosophy:{
+  'Toy-Like':{ja:'触りたくなる厚み、丸み、押した時の弾力を優先。',en:'Prioritize tactile thickness, roundness, and springy feedback.'},
+  'Functional':{ja:'装飾より視認性・階層・導線を優先。',en:'Prioritize legibility, hierarchy, and flow over decoration.'},
+  'Luxury':{ja:'余白・素材・細部精度で価値を伝える。',en:'Convey value through whitespace, material, and detail precision.'},
+  'Minimal':{ja:'形、色、余白だけで成立させる。',en:'Resolve with form, color, and whitespace alone.'},
+  'Craft':{ja:'手作りの揺らぎと温かみを許容する。',en:'Allow handmade variation and warmth.'}
+ },
+ material:{
+  'Soft Plastic':{ja:'安全・親しみ・カジュアル。玩具的UIに向く。',en:'Safe, friendly, casual. Suits toy-like UI.'},
+  'Energy / Hologram':{ja:'半透明発光面、エッジグロー、非物質感。',en:'Semi-transparent glowing surface, edge glow, non-physical feel.'},
+  'Crystal / Glass':{ja:'透明感、屈折、シャープなハイライト。',en:'Transparency, refraction, sharp highlights.'}
+ }
 };
 
 function buildChips(containerId, items, defaults, klass, dataName){
@@ -172,6 +519,20 @@ function buildChips(containerId, items, defaults, klass, dataName){
   var on=!!(defaults&&defaults[name]);
   chip.className='part-chip '+(klass||'')+(on?' active':'');
   chip.innerHTML='<input type="checkbox" '+(on?'checked':'')+' data-'+dataName+'="'+name+'"><span>'+name+'</span>';
+  chip.querySelector('input').addEventListener('change',function(){this.closest('label').classList.toggle('active',this.checked)});
+  list.appendChild(chip);
+ });
+}
+function rebuildUxChips(){
+ var list=el('uxList'); if(!list) return;
+ var prev=selected('uxList','ux');
+ list.innerHTML='';
+ ALL_UX_EN.forEach(function(key){
+  var label=(currentLang==='ja'&&UX_JA[key])?UX_JA[key]:key;
+  var on=(prev.indexOf(key)>=0);
+  var chip=document.createElement('label');
+  chip.className='part-chip ux-chip'+(on?' active':'');
+  chip.innerHTML='<input type="checkbox" '+(on?'checked':'')+' data-ux="'+key+'"><span>'+label+'</span>';
   chip.querySelector('input').addEventListener('change',function(){this.closest('label').classList.toggle('active',this.checked)});
   list.appendChild(chip);
  });
@@ -190,14 +551,15 @@ function setMode(mode){
  if(showScreen && !v('wireframe').trim()) applyWireframeTemplate();
 }
 function updateHints(){
- el('styleHint').textContent=(HINTS.style[v('style')]||'');
- el('philosophyHint').textContent=(HINTS.philosophy[v('philosophy')]||'');
- el('materialHint').textContent=(HINTS.material[v('material')]||'');
- el('worldHint').textContent='Culture / Motif / Era / Mood を組み合わせ、単語ひとつの「世界観」に依存しない構造です。';
+ var L=LANG[currentLang];
+ var sh=HINTS.style[v('style')]; el('styleHint').textContent=sh?(sh[currentLang]||''):'';
+ var ph=HINTS.philosophy[v('philosophy')]; el('philosophyHint').textContent=ph?(ph[currentLang]||''):'';
+ var mh=HINTS.material[v('material')]; el('materialHint').textContent=mh?(mh[currentLang]||''):'';
+ el('worldHint').textContent=L.worldHint;
  checkConflicts();
 }
 function updateDecorationLevel(){
- var none=v('decorationRule')==='None / 装飾なし';
+ var none=v('decorationRule')==='None';
  el('decorationLevelBox').classList.toggle('hidden', none);
  el('motifBox').classList.toggle('hidden', none);
 }
@@ -222,7 +584,7 @@ function autoSetRules(){
  if(v('ruleMode')==='preset'){applyPreset();return}
  if(v('ruleMode')==='manual') return;
  var o={radius:16,stroke:2,shadowY:4,shadowBlur:10,buttonHeight:64,panelPadding:20,iconSize:40,gridUnit:8};
- if(v('style').indexOf('3D Cartoon')>=0||v('philosophy').indexOf('Toy-Like')>=0){o={radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8};}
+ if(v('style')==='3D Cartoon'||v('philosophy')==='Toy-Like'){o={radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8};}
  if(v('style')==='SF HUD'||v('mood')==='Sci-Fi'){o={radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8}; setVal('edgeModifier','Notch'); setVal('frameModifier','Split Frame')}
  applyRuleObj(o); updateModifierPreview();
 }
@@ -231,45 +593,41 @@ function rulesText(){
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
 }
 function unifiedContext(){
- var mood=v('mood'), era=v('era'), culture=v('culture');
- var style=v('style'), philosophy=v('philosophy');
- return 'This UI belongs to a '+mood+', '+era+' world inspired by '+culture+' aesthetics.\nVisual identity is defined by '+style+' with '+philosophy+' sensibility.\n';
+ return 'This UI belongs to a '+v('mood')+', '+v('era')+' world inspired by '+v('culture')+' aesthetics.\nVisual identity is defined by '+v('style')+' with '+v('philosophy')+' sensibility.\n';
 }
 function commonContext(){
- var decStr=v('decorationRule')==='None / 装飾なし'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
+ var decStr=v('decorationRule')==='None'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
  return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
 }
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
-function uxText(){var u=getUx(); return u.length?u.join('、'):'not specified'}
+function uxText(){var u=getUx(); return u.length?u.join(', '):'not specified'}
 function extraText(){return v('userNote').trim()?('\nAdditional Instructions:\n'+v('userNote').trim()):''}
 
 function genreText(){var g=v('gameGenre'); return g?('Game Genre: '+g+'\n'):''}
-function motifText(){var rule=v('decorationRule'); if(rule==='None / 装飾なし') return ''; return 'Motif Source: '+v('motif')+'\n';}
+function motifText(){var rule=v('decorationRule'); if(rule==='None') return ''; return 'Motif Source: '+v('motif')+'\n';}
 
-// Placement: WHERE decoration appears (derived from Decoration Rule select)
 var PLACEMENT_MAP={
- 'None / 装飾なし':'None',
- 'Edge Accent / 端装飾':'Corner',
- 'Corner Accent / 角装飾':'Corner',
- 'Top Center Accent / 上辺中央':'Top Center',
- 'Pattern Band / 帯状':'Mid Edge',
- 'Full Ornamental / 全面装飾':'Corner'
+ 'None':'None',
+ 'Edge Accent':'Corner',
+ 'Corner Accent':'Corner',
+ 'Top Center Accent':'Top Center',
+ 'Pattern Band':'Mid Edge',
+ 'Full Ornamental':'Corner'
 };
-// Primitive: WHAT shape (derived from Motif Source select)
 var PRIMITIVE_SHAPES={
- 'Geometric / 幾何学':'Step',
- 'Architecture / 建築':'Arch',
- 'Temple / 神殿':'Gate',
- 'Gear / ギア':'Cog',
- 'Armor / 防具':'Shield',
- 'Jewelry / 宝飾':'Gem',
- 'Folk Art / 民芸':'Seal',
- 'Heraldry / 紋章':'Crest',
- 'Circuit / 回路':'Notch',
- 'Weave / 織物':'Braid',
- 'Carving / 彫刻':'Relief',
- 'Botanical / 植物文様':'Leaf'
+ 'Geometric':'Step',
+ 'Architecture':'Arch',
+ 'Temple':'Gate',
+ 'Gear':'Cog',
+ 'Armor':'Shield',
+ 'Jewelry':'Gem',
+ 'Folk Art':'Seal',
+ 'Heraldry':'Crest',
+ 'Circuit':'Notch',
+ 'Weave':'Braid',
+ 'Carving':'Relief',
+ 'Botanical':'Leaf'
 };
 function getPlacement(){return PLACEMENT_MAP[v('decorationRule')]||'Corner';}
 function getPrimitiveShape(){
@@ -278,9 +636,9 @@ function getPrimitiveShape(){
 }
 function decorationLevelText(){
  var level=v('decoration');
- if(level==='Small / 小') return 'small — subtle, minimal presence, never competing with component function';
- if(level==='Medium / 中') return 'medium — moderate presence, clearly visible but secondary to the component shape';
- if(level==='Large / 大') return 'large — prominent and expressive, a key part of the visual identity';
+ if(level==='Small') return 'small — subtle, minimal presence, never competing with component function';
+ if(level==='Medium') return 'medium — moderate presence, clearly visible but secondary to the component shape';
+ if(level==='Large') return 'large — prominent and expressive, a key part of the visual identity';
  return 'small';
 }
 
@@ -397,30 +755,39 @@ function buildScreenMockupPrompt(){
 function buildPromptPack(){return '[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='asciiWireframe')r=buildAsciiWireframePrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
- el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
+ el('output').value=r; el('status').textContent=LANG[currentLang].statusGenerated; checkConflicts();
 }
-function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent='コピーしました。'});}
-function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
-function resetToRecommended(){setVal('culture','Global / Generic');setVal('motif','Geometric / 幾何学');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
+function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent=LANG[currentLang].statusCopied});}
+function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent=LANG[currentLang].statusSelected;}
+function resetToRecommended(){
+ setVal('culture','Global / Generic');setVal('motif','Geometric');setVal('era','Contemporary');setVal('mood','Playful');
+ setVal('style','3D Cartoon');setVal('philosophy','Toy-Like');setVal('material','Soft Plastic');
+ setVal('shape','Rounded');setVal('lighting','Soft Gloss');setVal('animation','Elastic');
+ setVal('decorationRule','Edge Accent');setVal('decoration','Small');
+ updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');
+ autoSetRules();updateHints();updateModifierPreview();
+ el('status').textContent=LANG[currentLang].statusReset;
+}
 
 var GENRE_PRESETS={
- 'Casual': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Elastic / 弾む',culture:'Global / Generic',motif:'Geometric / 幾何学',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Idle':   {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Bouncy / バウンス',culture:'Global / Generic',motif:'Botanical / 植物文様',era:'Contemporary',mood:'Warm',colorSystem:'Pastel / パステル',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Puzzle': {style:'Flat Design（フラットデザイン）',philosophy:'Minimal（削ぎ落とす）',material:'Paper / Cardboard（紙・厚紙）',shape:'薄く軽い',lighting:'フラット',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Geometric / 幾何学',era:'Timeless',mood:'Minimal',colorSystem:'Monochrome / モノクロ',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
- 'Gacha':  {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Luxury（高級感）',material:'Crystal / Glass（ガラス・水晶）',shape:'角丸',lighting:'強い光沢',animation:'Bouncy / バウンス',culture:'Japan / 日本',motif:'Jewelry / 宝飾',era:'Contemporary',mood:'Festival',colorSystem:'Dark Jewel Tone / 深い宝石色',decorationRule:'Full Ornamental / 全面装飾',decoration:'Large / 大'},
- 'RPG':    {style:'Matte 3D（マット3D）',philosophy:'Functional（機能主義）',material:'Leather（革）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Western Europe / 西欧',motif:'Armor / 防具',era:'Medieval',mood:'Adventure',colorSystem:'Earth Colors / アースカラー',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'},
- 'Fantasy':{style:'2D Illustrated（手描きイラスト）',philosophy:'Craft（手作り感）',material:'Fabric / Felt（布・フェルト）',shape:'角丸',lighting:'柔らかい光沢',animation:'Smooth / なめらか',culture:'Nordic / 北欧',motif:'Botanical / 植物文様',era:'Timeless',mood:'Magical',colorSystem:'Natural Craft / 自然素材色',decorationRule:'Pattern Band / 帯状',decoration:'Medium / 中'},
- 'Action': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'強い光沢',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Heraldry / 紋章',era:'Near Future',mood:'Heroic',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Strategy':{style:'Flat Design（フラットデザイン）',philosophy:'Functional（機能主義）',material:'Hard Plastic（硬質プラスチック）',shape:'シャープ',lighting:'フラット',animation:'Mechanical / カチッと',culture:'Global / Generic',motif:'Architecture / 建築',era:'Early Modern',mood:'Tense',colorSystem:'Earth Colors / アースカラー',decorationRule:'None / 装飾なし',decoration:'Small / 小'},
- 'SciFi':  {style:'SF HUD',philosophy:'Functional（機能主義）',material:'Energy / Hologram（ホログラム）',shape:'シャープ',lighting:'ネオン発光',animation:'Snappy / キビキビ',culture:'Global / Generic',motif:'Circuit / 回路',era:'Far Future',mood:'Sci-Fi',colorSystem:'Neon / ネオン',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
- 'Horror': {style:'Matte 3D（マット3D）',philosophy:'Craft（手作り感）',material:'Stone（石材）',shape:'レイヤード',lighting:'マット',animation:'Smooth / なめらか',culture:'Eastern Europe / 東欧',motif:'Temple / 神殿',era:'Victorian',mood:'Horror',colorSystem:'Monochrome / モノクロ',decorationRule:'Corner Accent / 角装飾',decoration:'Medium / 中'}
+ 'Casual': {style:'3D Cartoon',philosophy:'Toy-Like',material:'Soft Plastic',shape:'Rounded',lighting:'Soft Gloss',animation:'Elastic',culture:'Global / Generic',motif:'Geometric',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors',decorationRule:'Edge Accent',decoration:'Small'},
+ 'Idle':   {style:'3D Cartoon',philosophy:'Toy-Like',material:'Soft Plastic',shape:'Rounded',lighting:'Soft Gloss',animation:'Bouncy',culture:'Global / Generic',motif:'Botanical',era:'Contemporary',mood:'Warm',colorSystem:'Pastel',decorationRule:'Edge Accent',decoration:'Small'},
+ 'Puzzle': {style:'Flat Design',philosophy:'Minimal',material:'Paper / Cardboard',shape:'Thin',lighting:'Flat',animation:'Snappy',culture:'Global / Generic',motif:'Geometric',era:'Timeless',mood:'Minimal',colorSystem:'Monochrome',decorationRule:'None',decoration:'Small'},
+ 'Gacha':  {style:'3D Cartoon',philosophy:'Luxury',material:'Crystal / Glass',shape:'Rounded',lighting:'Strong Gloss',animation:'Bouncy',culture:'Japan',motif:'Jewelry',era:'Contemporary',mood:'Festival',colorSystem:'Dark Jewel Tone',decorationRule:'Full Ornamental',decoration:'Large'},
+ 'RPG':    {style:'Matte 3D',philosophy:'Functional',material:'Leather',shape:'Layered',lighting:'Matte',animation:'Smooth',culture:'Western Europe',motif:'Armor',era:'Medieval',mood:'Adventure',colorSystem:'Earth Colors',decorationRule:'Corner Accent',decoration:'Medium'},
+ 'Fantasy':{style:'2D Illustrated',philosophy:'Craft',material:'Fabric / Felt',shape:'Rounded',lighting:'Soft Gloss',animation:'Smooth',culture:'Nordic',motif:'Botanical',era:'Timeless',mood:'Magical',colorSystem:'Natural Craft',decorationRule:'Pattern Band',decoration:'Medium'},
+ 'Action': {style:'3D Cartoon',philosophy:'Functional',material:'Hard Plastic',shape:'Sharp',lighting:'Strong Gloss',animation:'Snappy',culture:'Global / Generic',motif:'Heraldry',era:'Near Future',mood:'Heroic',colorSystem:'Warm Primary Colors',decorationRule:'Edge Accent',decoration:'Small'},
+ 'Strategy':{style:'Flat Design',philosophy:'Functional',material:'Hard Plastic',shape:'Sharp',lighting:'Flat',animation:'Mechanical',culture:'Global / Generic',motif:'Architecture',era:'Early Modern',mood:'Tense',colorSystem:'Earth Colors',decorationRule:'None',decoration:'Small'},
+ 'SciFi':  {style:'SF HUD',philosophy:'Functional',material:'Energy / Hologram',shape:'Sharp',lighting:'Neon Glow',animation:'Snappy',culture:'Global / Generic',motif:'Circuit',era:'Far Future',mood:'Sci-Fi',colorSystem:'Neon',decorationRule:'Edge Accent',decoration:'Small'},
+ 'Horror': {style:'Matte 3D',philosophy:'Craft',material:'Stone',shape:'Layered',lighting:'Matte',animation:'Smooth',culture:'Eastern Europe',motif:'Temple',era:'Victorian',mood:'Horror',colorSystem:'Monochrome',decorationRule:'Corner Accent',decoration:'Medium'}
 };
 function applyGenrePreset(){
  var g=v('gameGenre'); if(!g) return;
  var p=GENRE_PRESETS[g]; if(!p) return;
  Object.keys(p).forEach(function(k){if(el(k)) setVal(k,p[k]);});
  updateDecorationLevel(); autoSetRules(); updateHints(); updateModifierPreview();
- el('status').textContent=g+' ジャンルのプリセットを適用しました。';
+ var msg=currentLang==='ja'?g+' ジャンルのプリセットを適用しました。':g+' genre preset applied.';
+ el('status').textContent=msg;
 }
 function applyWireframeTemplate(){
  var t=v('screenType'); var wf='';
@@ -436,70 +803,49 @@ function checkConflicts(){
  var hits=[];
  var style=v('style'), philosophy=v('philosophy'), mood=v('mood'), era=v('era');
  var motif=v('motif'), material=v('material'), color=v('colorSystem'), decoration=v('decoration');
+ var ja=currentLang==='ja';
+ function w(j,e){hits.push(ja?j:e);}
 
  var futureEra=(era==='Far Future'||era==='Near Future'||era==='Post Apocalyptic');
  var ancientEra=(era==='Ancient'||era==='Classical'||era==='Medieval');
 
- // Style conflicts
- if(style==='SF HUD' && material.indexOf('Soft Plastic')>=0)
-  hits.push('SF HUD と Soft Plastic は衝突します。MaterialをEnergy/Hologramへ。');
- if(style.indexOf('Matte 3D')>=0 && (v('lighting')==='柔らかい光沢'||v('lighting')==='強い光沢'))
-  hits.push('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。');
- if(style==='SF HUD' && (motif.indexOf('Folk Art')>=0||motif.indexOf('Botanical')>=0||motif.indexOf('Weave')>=0))
-  hits.push('SF HUD と '+motif+' は装飾モチーフが衝突します。MotifをCircuit / Gearへ。');
-
- // Philosophy conflicts
- if(philosophy.indexOf('Minimal')>=0 && (decoration==='Medium / 中'||decoration==='Large / 大'))
-  hits.push('Minimal と Medium/Large Decoration は矛盾します。Decoration LevelをSmallへ。');
- if(philosophy.indexOf('Toy-Like')>=0 && (mood==='Dark'||mood==='Horror'||mood==='Tense'))
-  hits.push('Toy-Like と '+mood+' は方向性が矛盾します。PhilosophyをFunctionalまたはCraftへ。');
-
- // Era × Style conflicts
+ if(style==='SF HUD' && material==='Soft Plastic')
+  w('SF HUD と Soft Plastic は衝突します。MaterialをEnergy/Hologramへ。','SF HUD conflicts with Soft Plastic. Change Material to Energy / Hologram.');
+ if(style==='Matte 3D' && (v('lighting')==='Soft Gloss'||v('lighting')==='Strong Gloss'))
+  w('Matte 3D と光沢指定が矛盾します。Lightingはマット推奨。','Matte 3D conflicts with gloss lighting. Use Matte lighting.');
+ if(style==='SF HUD' && (motif==='Folk Art'||motif==='Botanical'||motif==='Weave'))
+  w('SF HUD と '+motif+' は装飾モチーフが衝突します。MotifをCircuit / Gearへ。','SF HUD conflicts with '+motif+' motif. Use Circuit or Gear.');
+ if(philosophy==='Minimal' && (decoration==='Medium'||decoration==='Large'))
+  w('Minimal と Medium/Large Decoration は矛盾します。Decoration LevelをSmallへ。','Minimal philosophy conflicts with Medium/Large decoration. Use Small.');
+ if(philosophy==='Toy-Like' && (mood==='Dark'||mood==='Horror'||mood==='Tense'))
+  w('Toy-Like と '+mood+' は方向性が矛盾します。PhilosophyをFunctionalまたはCraftへ。','Toy-Like conflicts with '+mood+' mood. Use Functional or Craft.');
  if(era==='Ancient' && style==='SF HUD')
-  hits.push('Ancient と SF HUD は時代感が矛盾します。EraをFar Futureへ。');
-
- // Color × Era conflicts
- if(color.indexOf('Natural Craft')>=0 && futureEra)
-  hits.push('Natural Craft色 と '+era+' は方向性が矛盾します。ColorをNeon / Dark Jewel Toneへ。');
- if(color.indexOf('Neon')>=0 && ancientEra)
-  hits.push('Neon と '+era+' は時代感が矛盾します。ColorをEarth Colors / Dark Jewel Toneへ。');
-
- // Mood × Philosophy conflicts
- if((mood==='Heroic'||mood==='Adventure'||mood==='Competitive') && philosophy.indexOf('Toy-Like')>=0)
-  hits.push(mood+' Mood と Toy-Like は方向性が噛み合いにくいです。PhilosophyをFunctional / Luxuryへ。');
-
- // Pixel Art conflicts
+  w('Ancient と SF HUD は時代感が矛盾します。EraをFar Futureへ。','Ancient era conflicts with SF HUD. Use Far Future.');
+ if(color==='Natural Craft' && futureEra)
+  w('Natural Craft色 と '+era+' は方向性が矛盾します。ColorをNeon / Dark Jewel Toneへ。','Natural Craft color conflicts with '+era+'. Use Neon or Dark Jewel Tone.');
+ if(color==='Neon' && ancientEra)
+  w('Neon と '+era+' は時代感が矛盾します。ColorをEarth Colors / Dark Jewel Toneへ。','Neon conflicts with '+era+'. Use Earth Colors or Dark Jewel Tone.');
+ if((mood==='Heroic'||mood==='Adventure'||mood==='Competitive') && philosophy==='Toy-Like')
+  w(mood+' Mood と Toy-Like は方向性が噛み合いにくいです。PhilosophyをFunctional / Luxuryへ。',mood+' mood conflicts with Toy-Like. Use Functional or Luxury.');
  var shadowBlur=parseInt(v('shadowBlur')||0), shadowY=parseInt(v('shadowY')||0);
- if(style==='Pixel Art（ピクセルアート）' && (shadowBlur>4||shadowY>4))
-  hits.push('Pixel Art にシャドウブラーは不自然です。Shadow BlurとShadow Offset Yを0〜4へ。');
- if(style==='Pixel Art（ピクセルアート）' && v('lighting')!=='フラット')
-  hits.push('Pixel Art はLighting: フラット推奨。光沢・グローはピクセル感を壊します。');
-
- // Paper Cut × Material conflicts
- if(style==='Paper Cut（切り絵）' && (material.indexOf('Metal')>=0||material.indexOf('Crystal')>=0||material.indexOf('Stone')>=0||material.indexOf('Energy')>=0))
-  hits.push('Paper Cut と '+material+' は素材感が矛盾します。MaterialをPaper / Cardboardへ。');
-
- // Sticker × Lighting conflicts
- if(style==='Sticker（ステッカー）' && v('lighting')==='マット')
-  hits.push('Sticker はアウトライン＋光沢が基本です。Lightingはフラットまたは柔らかい光沢推奨。');
-
- // Redundant Luxury / Minimal
- if(mood==='Luxury' && philosophy.indexOf('Luxury')>=0)
-  hits.push('Mood と Philosophy 両方に Luxury が設定されています。片方で十分です（Moodは世界観、PhilosophyはUI哲学）。');
- if(mood==='Minimal' && philosophy.indexOf('Minimal')>=0)
-  hits.push('Mood と Philosophy 両方に Minimal が設定されています。片方で十分です（Moodは世界観、PhilosophyはUI哲学）。');
-
- // Shape × FormModifier redundancy
- if(v('shape')==='角丸' && v('formModifier')==='Rounded')
-  hits.push('Shape Language: 角丸 と Form Modifier: Rounded が重複しています。FormModifierをChunkyなど別の値へ。');
-
- // 2D Illustrated × heavy shadow
- if(style==='2D Illustrated（手描きイラスト）' && shadowBlur>10)
-  hits.push('2D Illustrated に大きなShadow Blurは不自然です。Shadow Blur 6以下を推奨。');
-
- // Isometric × Full Ornamental
- if(style==='Isometric（アイソメトリック）' && v('decorationRule').indexOf('Full Ornamental')>=0)
-  hits.push('Isometric スタイルに Full Ornamental 装飾は視点の制約上ほぼ表現できません。Corner AccentまたはEdge Accentへ。');
+ if(style==='Pixel Art' && (shadowBlur>4||shadowY>4))
+  w('Pixel Art にシャドウブラーは不自然です。Shadow BlurとShadow Offset Yを0〜4へ。','Pixel Art with high shadow blur looks unnatural. Use Shadow Blur and Y ≤ 4.');
+ if(style==='Pixel Art' && v('lighting')!=='Flat')
+  w('Pixel Art はLighting: フラット推奨。光沢・グローはピクセル感を壊します。','Pixel Art should use Flat lighting. Gloss/glow breaks the pixel look.');
+ if(style==='Paper Cut' && (material==='Metal'||material==='Crystal / Glass'||material==='Stone'||material==='Energy / Hologram'))
+  w('Paper Cut と '+material+' は素材感が矛盾します。MaterialをPaper / Cardboardへ。','Paper Cut conflicts with '+material+'. Use Paper / Cardboard.');
+ if(style==='Sticker' && v('lighting')==='Matte')
+  w('Sticker はアウトライン＋光沢が基本です。Lightingはフラットまたは柔らかい光沢推奨。','Sticker style needs outline + gloss. Use Flat or Soft Gloss lighting.');
+ if(mood==='Luxury' && philosophy==='Luxury')
+  w('Mood と Philosophy 両方に Luxury が設定されています。片方で十分です。','Both Mood and Philosophy are set to Luxury. One is sufficient.');
+ if(mood==='Minimal' && philosophy==='Minimal')
+  w('Mood と Philosophy 両方に Minimal が設定されています。片方で十分です。','Both Mood and Philosophy are set to Minimal. One is sufficient.');
+ if(v('shape')==='Rounded' && v('formModifier')==='Rounded')
+  w('Shape Language: Rounded と Form Modifier: Rounded が重複しています。','Shape Language and Form Modifier are both Rounded — redundant.');
+ if(style==='2D Illustrated' && shadowBlur>10)
+  w('2D Illustrated に大きなShadow Blurは不自然です。Shadow Blur 6以下を推奨。','2D Illustrated with high Shadow Blur looks unnatural. Use ≤ 6.');
+ if(style==='Isometric' && v('decorationRule')==='Full Ornamental')
+  w('Isometric スタイルに Full Ornamental 装飾は視点の制約上ほぼ表現できません。','Full Ornamental decoration is nearly impossible to express in Isometric view.');
 
  var box=el('conflictBox'), list=el('conflictList');
  if(hits.length){list.innerHTML=hits.map(function(h){return '<div class="conflict-item">'+h+'</div>'}).join('');box.style.display='block'}else{box.style.display='none'}
@@ -515,7 +861,13 @@ function bindModeButtons(){
  });
 }
 
-function init(){bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,null,'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();setMode('designSystem');}
+function init(){
+ bindModeButtons();
+ buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');
+ rebuildUxChips();
+ buildChips('negList',ALL_NEG,null,'neg-chip','neg');
+ applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();setMode('designSystem');
+}
 init();
 </script>
 </body>
