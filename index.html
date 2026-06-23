@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.17</title>
+<title>ゲームUIプロンプト生成ツール v1.18</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -37,7 +37,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.17</h1>
+<h1>ゲームUIプロンプト生成ツール v1.18</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -104,6 +104,14 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
     <div class="lock-row"><label>Panel Padding<input id="panelPadding" type="number" value="24"></label><div class="lock"><input type="checkbox" id="lockPanelPadding">Lock</div></div>
     <div class="lock-row"><label>Icon Size<input id="iconSize" type="number" value="48"></label><div class="lock"><input type="checkbox" id="lockIconSize">Lock</div></div>
     <div class="lock-row"><label>Grid Unit<input id="gridUnit" type="number" value="8"></label><div class="lock"><input type="checkbox" id="lockGridUnit" checked>Lock</div></div>
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <div><label>Component Gap</label><select id="componentGap">
+      <option value="tight">Tight / 詰める — 1× grid unit</option>
+      <option value="normal" selected>Normal / 標準 — 2× grid unit</option>
+      <option value="spacious">Spacious / ゆったり — 3× grid unit</option>
+      <option value="airy">Airy / 広々 — 4× grid unit</option>
+    </select></div>
   </div>
 
   <div class="section-title components-section">7. COMPONENT SELECTOR</div>
@@ -226,9 +234,13 @@ function autoSetRules(){
  if(v('style')==='SF HUD'||v('mood')==='Sci-Fi'){o={radius:6,stroke:2,shadowY:0,shadowBlur:16,buttonHeight:56,panelPadding:20,iconSize:40,gridUnit:8}; setVal('edgeModifier','Notch'); setVal('frameModifier','Split Frame')}
  applyRuleObj(o); updateModifierPreview();
 }
+function componentGapText(){
+ var g=v('gridUnit')||8; var m={'tight':1,'normal':2,'spacious':3,'airy':4}; var mul=m[v('componentGap')]||2;
+ return '- Component Gap: '+mul+'× grid unit ('+((g*mul))+'px) — minimum visible space between all adjacent components and grid items';
+}
 function rulesText(){
  var rows=[['Corner Radius',v('radius')+'px',checked('lockRadius')],['Stroke Width',v('stroke')+'px',checked('lockStroke')],['Shadow Offset Y',v('shadowY')+'px',checked('lockShadowY')],['Shadow Blur',v('shadowBlur')+'px',checked('lockShadowBlur')],['Button Height',v('buttonHeight')+'px',checked('lockButtonHeight')],['Panel Padding',v('panelPadding')+'px',checked('lockPanelPadding')],['Icon Size',v('iconSize')+'px',checked('lockIconSize')],['Grid Unit',v('gridUnit')+'px',checked('lockGridUnit')]];
- return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')
+ return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')+'\n'+componentGapText();
 }
 function unifiedContext(){
  var mood=v('mood'), era=v('era'), culture=v('culture');
