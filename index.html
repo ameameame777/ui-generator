@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.20</title>
+<title>ゲームUIプロンプト生成ツール v1.21</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.20</h1>
+<h1>ゲームUIプロンプト生成ツール v1.21</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -273,7 +273,7 @@ function syncColorFromText(pickerId,textId){
 }
 function colorPaletteText(){
  var p=el('cPrimary').value, s=el('cSecondary2').value, bg=el('cBackground').value, a=el('cAccent').value, d=el('cDanger').value;
- return 'Color Palette (strictly enforce — do not use any other color):\n- Primary (main action buttons): '+p+'\n- Secondary (sub buttons / panels): '+s+'\n- Background: '+bg+'\n- Accent (highlights / rewards): '+a+'\n- Danger (destructive actions only): '+d+'\nDo not introduce green, blue, purple, or any color outside this palette.';
+ return 'Color Palette (strictly enforce — use ONLY these 5 colors):\n- Primary (main action buttons): '+p+'\n- Secondary (sub buttons / panels): '+s+'\n- Background: '+bg+'\n- Accent (highlights / rewards): '+a+'\n- Danger (destructive actions only): '+d+'\nDo not introduce any color outside this exact palette. Do not recolor buttons by their semantic meaning — use the palette role assignments above.';
 }
 function componentGapText(){
  var g=v('gridUnit')||8; var m={'tight':1,'normal':2,'spacious':3,'airy':4}; var mul=m[v('componentGap')]||2;
