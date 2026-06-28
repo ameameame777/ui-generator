@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.25</title>
+<title>ゲームUIプロンプト生成ツール v1.26</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.25</h1>
+<h1>ゲームUIプロンプト生成ツール v1.26</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -279,6 +279,16 @@ function componentGapText(){
  var g=v('gridUnit')||8; var m={'tight':1,'normal':2,'spacious':3,'airy':4}; var mul=m[v('componentGap')]||2;
  return '- Component Gap: '+mul+'× grid unit ('+((g*mul))+'px) — minimum visible space between all adjacent components and grid items';
 }
+function layoutSpacingText(){
+ var g=parseInt(v('gridUnit'))||8; var m={'tight':1,'normal':2,'spacious':3,'airy':4}; var mul=m[v('componentGap')]||2;
+ var gap=g*mul; var edge=g*(mul+2); var section=g*(mul+2);
+ return 'LAYOUT SPACING & BREATHING ROOM (strictly enforce on every screen):\n'+
+  '- Screen edge margin: leave at least '+edge+'px of empty space between any component and all four screen edges. Nothing touches the screen border.\n'+
+  '- Vertical spacing between stacked sections (header, hero, banners, button rows, navigation): at least '+section+'px of empty space.\n'+
+  '- Gap between adjacent components in the same row/grid: at least '+gap+'px.\n'+
+  '- Do not let components touch each other or the screen edge. Generous, relaxed, airy layout with clear empty background showing between every element.\n'+
+  '- Prefer fewer elements per row with more whitespace over tightly packed rows. The background color must be clearly visible as separation between all components.';
+}
 function rulesText(){
  var rows=[['Corner Radius',v('radius')+'px',checked('lockRadius')],['Stroke Width',v('stroke')+'px',checked('lockStroke')],['Shadow Offset Y',v('shadowY')+'px',checked('lockShadowY')],['Shadow Blur',v('shadowBlur')+'px',checked('lockShadowBlur')],['Button Height',v('buttonHeight')+'px',checked('lockButtonHeight')],['Panel Padding',v('panelPadding')+'px',checked('lockPanelPadding')],['Icon Size',v('iconSize')+'px',checked('lockIconSize')],['Grid Unit',v('gridUnit')+'px',checked('lockGridUnit')]];
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')+'\n'+componentGapText();
@@ -445,7 +455,7 @@ function buildScreenMockupPrompt(){
  if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments, no folk art corner borders, no ornamental corner frames';
  if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
- return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', '+negativeText()+extraText();
+ return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\n'+layoutSpacingText()+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, '+negativeText()+extraText();
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'In this single response, generate FOUR (4) images — one image for each of the sections [01], [02], [03], [04] below.\n'+
