@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.19</title>
+<title>ゲームUIプロンプト生成ツール v1.20</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.19</h1>
+<h1>ゲームUIプロンプト生成ツール v1.20</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -133,7 +133,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
   <div id="screenSettings" class="hidden">
     <div class="section-title">8. SCREEN SETTINGS</div>
     <div class="grid">
-      <div><label>Screen Type</label><select id="screenType" onchange="applyWireframeTemplate()"><option>Home</option><option>Shop</option><option>Gacha</option><option>Reward</option><option>Event</option><option>Mission</option><option>Inventory</option></select></div>
+      <div><label>Screen Type</label><select id="screenType" onchange="applyWireframeTemplate()"><option>Home</option><option>Character Select</option><option>Shop</option><option>Gacha</option><option>Reward</option><option>Event</option><option>Mission</option><option>Inventory</option></select></div>
       <div><label>Layout Priority</label><select id="layoutPriority"><option>Bottom Action Focus / 下部操作重視</option><option>Information Density / 情報密度重視</option><option>Hero Visual Focus / ビジュアル重視</option><option>List Browsing / リスト閲覧重視</option></select></div>
       <div><label>Safe Area</label><select id="safeArea"><option>Enabled / セーフエリア有効</option><option>Disabled / セーフエリア指定なし</option></select></div>
       <div><label>Wireframe Template</label><button class="ghost" onclick="applyWireframeTemplate()" type="button">テンプレート反映</button></div>
@@ -445,7 +445,7 @@ function buildScreenMockupPrompt(){
  if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments, no folk art corner borders, no ornamental corner frames';
  if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
- return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nDo not include world illustrations, landscape art, castle images, character art, or large background illustrations inside panels or cards.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no world illustration, no landscape, no castle, no character art inside panels, '+negativeText()+extraText();
+ return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', '+negativeText()+extraText();
 }
 function buildPromptPack(){return '[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
@@ -475,14 +475,156 @@ function applyGenrePreset(){
  updateDecorationLevel(); autoSetRules(); updateHints(); updateModifierPreview();
  el('status').textContent=g+' ジャンルのプリセットを適用しました。';
 }
+var WIREFRAMES={
+'Home':
+'+------------------------------------------+\n'+
+'| [AVATAR Lv64] [EXP=====65%]  [⚙SETTING]  |\n'+
+'| [COIN 12,450 +] [GEM 320 +] [ENERGY 76+] |\n'+
+'+------------------------------------------+\n'+
+'|                                          |\n'+
+'|         WORLD HERO ART / KEY VISUAL       |\n'+
+'|       (full-bleed world illustration,     |\n'+
+'|        featured character standing)       |\n'+
+'|                                          |\n'+
+'|  [NEWS]                      [LOGIN BONUS] |\n'+
+'+------------------------------------------+\n'+
+'| [DAILY MISSION   2/3 ====]         [GO >] |\n'+
+'+------------------------------------------+\n'+
+'| [EVENT BANNER  - limited time  1d 4h]    |\n'+
+'+------------------------------------------+\n'+
+'| [FRIENDS] [GUILD] [MAILBOX] [RANKING]    |\n'+
+'+------------------------------------------+\n'+
+'|        [  PRIMARY CTA: START / PLAY  ]    |\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Character Select':
+'+------------------------------------------+\n'+
+'| [< BACK]   CHARACTER SELECT   [SORT v]    |\n'+
+'+------------------------------------------+\n'+
+'| [ALL][FIRE][WATER][WIND][LIGHT][DARK]    |  <- element filter tabs\n'+
+'+------------------------------------------+\n'+
+'|                          |               |\n'+
+'|   SELECTED CHARACTER      | NAME / TITLE  |\n'+
+'|   FULL-BODY ART PREVIEW    | Lv / RARITY * |\n'+
+'|                          | ATK  ====     |\n'+
+'|                          | DEF  ===      |\n'+
+'|                          | HP   =====    |\n'+
+'|                          | [SKILL ICONS] |\n'+
+'+------------------------------------------+\n'+
+'| CHARACTER ROSTER GRID                     |\n'+
+'| [C][C][C][C]                              |\n'+
+'| [C][C][C][C]   (rarity frame + level)     |\n'+
+'| [C][C][C][C]                              |\n'+
+'+------------------------------------------+\n'+
+'|  [ENHANCE]            [ CONFIRM / DECIDE ]|\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Shop':
+'+------------------------------------------+\n'+
+'| [< BACK]   SHOP    [COIN 12,450][GEM 320]|\n'+
+'+------------------------------------------+\n'+
+'| [SPECIAL][PACK][COIN][GEM][ITEM][LIMITED]|  <- category tabs\n'+
+'+------------------------------------------+\n'+
+'| [FEATURED PACK - BIG BANNER + PRICE]     |\n'+
+'|        limited time  remaining 2d 6h     |\n'+
+'+------------------------------------------+\n'+
+'| [ITEM ICON] STARTER PACK   [$4.99 BUY]   |\n'+
+'| [ITEM ICON] GEM x550       [$9.99 BUY]   |\n'+
+'| [ITEM ICON] DAILY DEAL     [300 COIN]    |\n'+
+'| [ITEM ICON] ENERGY REFILL  [50 GEM]      |\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Gacha':
+'+------------------------------------------+\n'+
+'| [< BACK]  SUMMON   [TICKET 8][GEM 320]   |\n'+
+'+------------------------------------------+\n'+
+'| [PICKUP BANNER - featured character art] |\n'+
+'|     rate up  -  ends in 3d 12h           |\n'+
+'+------------------------------------------+\n'+
+'| [PICKUP CHARACTERS PREVIEW STRIP]        |\n'+
+'| [C][C][C]   [RATES >] [DETAILS >]        |\n'+
+'+------------------------------------------+\n'+
+'| [PITY COUNTER  72 / 100 to guaranteed]   |\n'+
+'+------------------------------------------+\n'+
+'| [ DRAW x1  - 5 GEM ]  [ DRAW x10 -50GEM ]|\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Reward':
+'+------------------------------------------+\n'+
+'| [REWARD / RESULTS]                       |\n'+
+'+------------------------------------------+\n'+
+'|                                          |\n'+
+'|      CELEBRATION VISUAL / BURST FX        |\n'+
+'|                                          |\n'+
+'+------------------------------------------+\n'+
+'| REWARD GRID (rarity frames + amounts)    |\n'+
+'| [ITEM x250] [ITEM x120] [ITEM x80]       |\n'+
+'| [ITEM NEW!] [ITEM x10]  [ITEM x1]        |\n'+
+'+------------------------------------------+\n'+
+'|  [ CLAIM ALL ]            [ TAP TO SKIP ] |\n'+
+'+------------------------------------------+',
+'Event':
+'+------------------------------------------+\n'+
+'| [< BACK] EVENT NAME    [TIMER 1d 4h 22m] |\n'+
+'+------------------------------------------+\n'+
+'| [EVENT KEY VISUAL BANNER]                |\n'+
+'+------------------------------------------+\n'+
+'| [EVENT POINT  1830 / 2500 =====]         |\n'+
+'+------------------------------------------+\n'+
+'| MISSION LIST                              |\n'+
+'| [MISSION  clear stage 3   2/3] [GO]      |\n'+
+'| [MISSION  collect x50    40/50][GO]      |\n'+
+'| [MISSION  win 2 battles   0/2] [GO]      |\n'+
+'+------------------------------------------+\n'+
+'| [EXCHANGE SHOP >]    [RANKING >]         |\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Mission':
+'+------------------------------------------+\n'+
+'| [< BACK]   MISSIONS                      |\n'+
+'+------------------------------------------+\n'+
+'| [DAILY] [WEEKLY] [ACHIEVEMENT]           |  <- tabs\n'+
+'+------------------------------------------+\n'+
+'| [DAILY LOGIN BONUS BAR  3/7 days]        |\n'+
+'+------------------------------------------+\n'+
+'| MISSION LIST (progress + reward + claim) |\n'+
+'| [* collect 100 coins   60/100 ][CLAIM]   |\n'+
+'| [* play 3 levels        1/3   ][  GO  ]  |\n'+
+'| [* win 2 levels         0/2   ][  GO  ]  |\n'+
+'| [* spend energy x20    20/20  ][CLAIM]   |\n'+
+'+------------------------------------------+\n'+
+'| [ CLAIM ALL COMPLETED ]                  |\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+',
+'Inventory':
+'+------------------------------------------+\n'+
+'| [< BACK]  INVENTORY   [GOLD 12,450]      |\n'+
+'+------------------------------------------+\n'+
+'| [ALL][EQUIP][CONSUME][MATERIAL][KEY]     |  <- category tabs\n'+
+'+------------------------------------------+\n'+
+'| ITEM GRID (icon + count + rarity frame)  |\n'+
+'| [I][I][I][I][I]                          |\n'+
+'| [I][I][I][I][I]                          |\n'+
+'| [I][I][I][I][I]                          |\n'+
+'+------------------------------------------+\n'+
+'| SELECTED ITEM DETAIL                      |\n'+
+'| [ICON]  NAME / RARITY                     |\n'+
+'|         description text...               |\n'+
+'+------------------------------------------+\n'+
+'| [EQUIP]      [USE]      [SELL]            |\n'+
+'+------------------------------------------+\n'+
+'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
+'+------------------------------------------+'
+};
 function applyWireframeTemplate(){
- var t=v('screenType'); var wf='';
- if(t==='Home') wf='+----------------------------------+\n| [HEADER: MENU / CURRENCY]       |\n+----------------------------------+\n| [HERO / PLAYER STATUS]          |\n|                                  |\n| [MAIN CONTENT CARD]             |\n|                                  |\n+----------------------------------+\n| [PRIMARY ACTION BUTTON]         |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
- if(t==='Shop') wf='+----------------------------------+\n| [BACK] [SHOP TITLE] [CURRENCY]  |\n+----------------------------------+\n| [CATEGORY TABS]                 |\n+----------------------------------+\n| [FEATURED PRODUCT CARD]         |\n| [PRODUCT LIST ITEM]             |\n| [PRODUCT LIST ITEM]             |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
- if(t==='Gacha') wf='+----------------------------------+\n| [HEADER: GACHA / CURRENCY]      |\n+----------------------------------+\n| [BANNER / FEATURED REWARD]      |\n|                                  |\n| [REWARD PREVIEW STRIP]          |\n+----------------------------------+\n| [DRAW 1]        [DRAW 10]       |\n+----------------------------------+\n| [BOTTOM NAVIGATION]             |\n+----------------------------------+';
- if(t==='Reward') wf='+----------------------------------+\n| [REWARD TITLE]                  |\n+----------------------------------+\n| [REWARD GRID / ICON FRAMES]     |\n| [ITEM] [ITEM] [ITEM]            |\n| [ITEM] [ITEM] [ITEM]            |\n+----------------------------------+\n| [CLAIM BUTTON]                  |\n+----------------------------------+';
- if(t==='Event') wf='+----------------------------------+\n| [EVENT HEADER / TIMER]          |\n+----------------------------------+\n| [EVENT BANNER]                  |\n| [MISSION LIST]                  |\n| [MISSION LIST]                  |\n+----------------------------------+\n| [PRIMARY CTA] [SECONDARY CTA]   |\n+----------------------------------+';
- if(!wf) wf='+----------------------------------+\n| [HEADER]                         |\n+----------------------------------+\n| [MAIN CONTENT]                   |\n+----------------------------------+\n| [PRIMARY ACTION]                 |\n+----------------------------------+';
+ var t=v('screenType');
+ var wf=WIREFRAMES[t]||'+----------------------------------+\n| [HEADER]                         |\n+----------------------------------+\n| [MAIN CONTENT]                   |\n+----------------------------------+\n| [PRIMARY ACTION]                 |\n+----------------------------------+';
  setVal('wireframe',wf);
 }
 function checkConflicts(){
