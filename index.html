@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.23</title>
+<title>ゲームUIプロンプト生成ツール v1.24</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.23</h1>
+<h1>ゲームUIプロンプト生成ツール v1.24</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -447,7 +447,15 @@ function buildScreenMockupPrompt(){
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
  return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', '+negativeText()+extraText();
 }
-function buildPromptPack(){return '[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
+function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
+ 'This is a sequence of 4 separate image prompts ([01]–[04]).\n'+
+ 'Generate them as 4 SEPARATE, FULL-SIZE images — one image per section — in order.\n'+
+ 'Do NOT combine them into a single image. Do NOT make a 2x2 grid, collage, contact sheet, or composite.\n'+
+ 'Each image must use the full canvas at full resolution.\n'+
+ 'Generate [01] first as one complete image. Then [02] as a second separate image, strictly inheriting [01]. Then [03]. Then [04], strictly inheriting [01] and [02].\n'+
+ 'Each later image must visually match the design system established in the earlier images.\n\n=== START OF SEQUENCE ===\n\n';
+}
+function buildPromptPack(){return promptPackHeader()+'[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='asciiWireframe')r=buildAsciiWireframePrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
  el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
