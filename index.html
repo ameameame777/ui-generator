@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.21</title>
+<title>ゲームUIプロンプト生成ツール v1.22</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.21</h1>
+<h1>ゲームUIプロンプト生成ツール v1.22</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -454,7 +454,7 @@ function generatePrompt(){
 }
 function copyPrompt(){navigator.clipboard.writeText(el('output').value).then(function(){el('status').textContent='コピーしました。'});}
 function selectPrompt(){var o=el('output');o.focus();o.select();o.setSelectionRange(0,o.value.length);el('status').textContent='全文選択しました。'}
-function resetToRecommended(){setVal('culture','Global / Generic');setVal('motif','Geometric / 幾何学');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
+function resetToRecommended(){setVal('culture','Global / Generic');setVal('motif','Geometric / 幾何学');setVal('era','Contemporary');setVal('mood','Playful');setVal('style','3D Cartoon（3Dカートゥーン）');setVal('philosophy','Toy-Like（玩具的）');setVal('material','Soft Plastic（柔らかいプラスチック）');setVal('shape','角丸');setVal('lighting','柔らかい光沢');setVal('animation','Elastic / 弾む');setVal('decorationRule','Edge Accent / 端装飾');setVal('decoration','Small / 小');updateDecorationLevel();setVal('formModifier','Chunky');setVal('edgeModifier','None');setVal('frameModifier','Layered');setVal('colorSystem','Warm Primary Colors / 暖色系原色');applyColorPreset();autoSetRules();updateHints();updateModifierPreview();el('status').textContent='推奨値に戻しました。'}
 
 var GENRE_PRESETS={
  'Casual': {style:'3D Cartoon（3Dカートゥーン）',philosophy:'Toy-Like（玩具的）',material:'Soft Plastic（柔らかいプラスチック）',shape:'角丸',lighting:'柔らかい光沢',animation:'Elastic / 弾む',culture:'Global / Generic',motif:'Geometric / 幾何学',era:'Contemporary',mood:'Playful',colorSystem:'Warm Primary Colors / 暖色系原色',decorationRule:'Edge Accent / 端装飾',decoration:'Small / 小'},
@@ -472,7 +472,7 @@ function applyGenrePreset(){
  var g=v('gameGenre'); if(!g) return;
  var p=GENRE_PRESETS[g]; if(!p) return;
  Object.keys(p).forEach(function(k){if(el(k)) setVal(k,p[k]);});
- updateDecorationLevel(); autoSetRules(); updateHints(); updateModifierPreview();
+ updateDecorationLevel(); applyColorPreset(); autoSetRules(); updateHints(); updateModifierPreview();
  el('status').textContent=g+' ジャンルのプリセットを適用しました。';
 }
 var WIREFRAMES={
