@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.31</title>
+<title>ゲームUIプロンプト生成ツール v1.32</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.31</h1>
+<h1>ゲームUIプロンプト生成ツール v1.32</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -472,8 +472,8 @@ function buildScreenMockupPrompt(){
   'Treat the Component Sheet as the source of truth.\n'+
   'Do not reinterpret, redesign, simplify, or invent component shapes.\n\n'+
   'All buttons, panels, tabs, currency bars, icon frames, badges, reward cards, scroll lists, and navigation items must match the Component Sheet exactly in:\n'+
-  '- corner radius\n- stroke width\n- shadow depth\n- material\n- highlight style\n- color system\n- frame layering\n- decoration placement\n- decoration primitive\n- decoration geometry\n- component proportions';
- var consistencyCheck='\n\nConsistency Check:\nThe final screen must look like it was assembled directly from the Component Sheet.\nIf a component appears in the screen, it must visually match the Component Sheet version.\nDo not create a new visual variation for the screen mockup.';
+  '- corner radius\n- stroke width\n- shadow depth\n- material\n- highlight style\n- color system\n- fill treatment (solid fill vs outline-only)\n- frame layering\n- decoration placement\n- decoration primitive\n- decoration geometry\n- component proportions\n- internal structure of composite components';
+ var consistencyCheck='\n\nConsistency Check:\nThe final screen must look like it was assembled directly from the Component Sheet.\nIf a component appears in the screen, it must visually match the Component Sheet version.\nDo not create a new visual variation for the screen mockup.\n\nFill Treatment Rule (strictly enforce):\n- If the Component Sheet Primary Button has a solid fill, every Primary Button in this screen (main CTA, GO, confirm) uses the SAME solid Primary fill. Do NOT convert filled buttons into dark outline-only / hollow versions to fit the scene mood.\n- Secondary Buttons in this screen use the SAME solid Secondary fill as the Component Sheet. The Secondary color must actually appear on the screen\'s sub buttons.\n- Composite components (e.g. Currency UI) keep the same internal structure as the Component Sheet version — if it is one combined bar holding multiple currencies, keep it as one combined bar; do not split it into separate bars or merge separate elements.';
  var placementNeg='no floating decorations, no sticker-like ornaments pasted over frames';
  if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments, no folk art corner borders, no ornamental corner frames';
  if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
