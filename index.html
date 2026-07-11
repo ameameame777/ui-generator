@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.28</title>
+<title>ゲームUIプロンプト生成ツール v1.29</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.28</h1>
+<h1>ゲームUIプロンプト生成ツール v1.29</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -466,7 +466,8 @@ function buildScreenMockupPrompt(){
    : placement==='Mid Edge'
    ? 'Decoration exists only at edge midpoints. No decoration at corners.'
    : 'No decoration anywhere. All components are completely clean.')+scopeSummary;
- var inheritanceBlock='Before creating the screen mockup, strictly inherit the established Design System Token Sheet and Component Sheet.\n\n'+
+ var inheritanceBlock='This is a text-to-image generation task (no reference image attached or required).\n'+
+  'If a Design System Token Sheet or Component Sheet image was already generated earlier in this conversation, match it exactly. Otherwise, build everything from the written specification below.\n\n'+
   'The screen mockup must be assembled using the same reusable components defined in the Component Sheet.\n'+
   'Treat the Component Sheet as the source of truth.\n'+
   'Do not reinterpret, redesign, simplify, or invent component shapes.\n\n'+
@@ -482,6 +483,7 @@ function buildScreenMockupPrompt(){
  return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\n'+layoutSpacingText()+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, '+negativeText()+extraText();
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
+ 'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
  'In this single response, generate FOUR (4) images — one image for each of the sections [01], [02], [03], [04] below.\n'+
  'Produce all 4 images in this one response. Do not stop after the first image. Do not ask for confirmation between images.\n'+
  'Each section is its own independent, full-size image — NOT a 2x2 grid, collage, contact sheet, or composite. Do not merge the four sections onto one canvas.\n'+
