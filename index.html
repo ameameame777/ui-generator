@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.34</title>
+<title>ゲームUIプロンプト生成ツール v1.35</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.34</h1>
+<h1>ゲームUIプロンプト生成ツール v1.35</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -480,7 +480,7 @@ function buildScreenMockupPrompt(){
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
  if(placement!=='None' && mockScope==='buttons') placementNeg+=', no decoration on panels, no decoration on popups, no decoration on tabs, no decoration on badges, no decoration on icon frames, no decoration on lists, no decoration on navigation';
  if(placement!=='None' && mockScope==='buttonsPanels') placementNeg+=', no decoration on tabs, no decoration on badges, no decoration on icon frames, no decoration on lists, no decoration on navigation';
- return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\n'+layoutSpacingText()+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, '+negativeText()+extraText();
+ return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nUse this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\nDESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room beyond the wireframe, resize and reproportion elements, and space out rows that appear tightly stacked in the wireframe. Keep the element inventory and vertical order; everything else (sizes, gaps, visual rhythm) is yours to design for a relaxed, premium feel.\n\n'+layoutSpacingText()+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, '+negativeText()+extraText();
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
@@ -530,7 +530,8 @@ function buildPromptPack(){
   'Match [02] exactly in: corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration placement / primitive / geometry, proportions, and internal structure of composite components.\n\n'+
   'Fill Treatment Rule: solid-filled buttons in [02] stay solid-filled here — never convert them into dark outline-only versions. The Secondary color must actually appear on the screen\'s sub buttons. Composite components (e.g. a combined currency bar) keep the same internal structure — do not split or merge them.\n\n'+
   'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\n'+
-  'Layout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\n'+
+  'Use this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\n'+
+  'DESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room beyond the wireframe, resize and reproportion elements, and space out rows that appear tightly stacked in the wireframe. Keep the element inventory and vertical order; everything else (sizes, gaps, visual rhythm) is yours to design for a relaxed, premium feel.\n\n'+
   layoutSpacingText()+'\n\n'+
   'World illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate.\n'+
   'Do not introduce new colors, shapes, materials, or decoration rules.\n'+
