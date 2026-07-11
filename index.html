@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.27</title>
+<title>ゲームUIプロンプト生成ツール v1.28</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.27</h1>
+<h1>ゲームUIプロンプト生成ツール v1.28</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -90,6 +90,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
     <div><label>Decoration Rule</label><select id="decorationRule" onchange="updateDecorationLevel()"><option selected>Edge Accent / 端装飾</option><option>None / 装飾なし</option><option>Corner Accent / 角装飾</option><option>Top Center Accent / 上辺中央</option><option>Pattern Band / 帯状</option><option>Full Ornamental / 全面装飾</option></select></div>
     <div id="motifBox"><label>Motif Source</label><select id="motif"><option selected>Geometric / 幾何学</option><option>Architecture / 建築</option><option>Temple / 神殿</option><option>Gear / ギア</option><option>Armor / 防具</option><option>Jewelry / 宝飾</option><option>Folk Art / 民芸</option><option>Heraldry / 紋章</option><option>Circuit / 回路</option><option>Weave / 織物</option><option>Carving / 彫刻</option><option>Botanical / 植物文様</option></select></div>
     <div id="decorationLevelBox"><label>Decoration Level</label><select id="decoration"><option selected>Small / 小</option><option>Medium / 中</option><option>Large / 大</option></select></div>
+    <div id="decorationScopeBox"><label>Decoration Scope</label><select id="decorationScope"><option value="all" selected>All Components / 全部品</option><option value="buttons">Buttons Only / ボタンのみ</option><option value="buttonsPanels">Buttons &amp; Panels / ボタンとパネル</option></select></div>
   </div>
 
   <div class="section-title">5. SHAPE MODIFIER</div>
@@ -218,6 +219,7 @@ function updateDecorationLevel(){
  var none=v('decorationRule')==='None / 装飾なし';
  el('decorationLevelBox').classList.toggle('hidden', none);
  el('motifBox').classList.toggle('hidden', none);
+ el('decorationScopeBox').classList.toggle('hidden', none);
 }
 function updateModifierPreview(){
  var form=v('formModifier'), edge=v('edgeModifier'), frame=v('frameModifier');
@@ -401,10 +403,24 @@ function placementRules(placement, shape){
  lines.push('');
  lines.push('Decoration intensity: '+decorationLevelText()+'.');
  lines.push('Decoration must be structurally integrated into the component frame — grown from or carved into the border, not placed on top as a separate floating element.');
+ var scope=v('decorationScope')||'all';
  if(placement==='Top Center'){
-  lines.push('Each component has exactly ONE '+shape+' decoration: centered on its top edge only, integrated into the top border.');
+  lines.push('Each decorated component has exactly ONE '+shape+' decoration: centered on its top edge only, integrated into the top border.');
   lines.push('The '+shape+' decoration does NOT appear at corners, side edges, or any other position.');
   lines.push('Corners of all components must be completely clean — no ornaments, no brackets, no diagonal decorations, no gold corner borders.');
+ }
+ lines.push('');
+ if(scope==='buttons'){
+  lines.push('DECORATION SCOPE — BUTTONS ONLY (strictly enforce):');
+  lines.push('Apply the '+shape+' decoration ONLY to buttons: Primary Button, Secondary Button, and Icon Button.');
+  lines.push('ALL other components — panels, popup windows, tabs, badges, icon frames, currency bars, reward cards, scroll lists, list items, and navigation items — are completely plain with ZERO decoration.');
+  lines.push('Undecorated components still share the same corner radius, stroke, material, color, and shadow as the rest of the design system.');
+  lines.push('Adding decoration to any non-button component is a violation of this design system.');
+ } else if(scope==='buttonsPanels'){
+  lines.push('DECORATION SCOPE — BUTTONS & PANELS ONLY (strictly enforce):');
+  lines.push('Apply the '+shape+' decoration ONLY to: Primary Button, Secondary Button, Icon Button, Panel, and Popup Window.');
+  lines.push('ALL other components — tabs, badges, icon frames, currency bars, reward cards, scroll lists, list items, and navigation items — are completely plain with ZERO decoration.');
+  lines.push('Undecorated components still share the same corner radius, stroke, material, color, and shadow as the rest of the design system.');
  } else {
   lines.push('Use '+shape+' consistently for ALL buttons, panels, tabs, icon frames, badges, reward cards, scroll lists, and navigation items.');
  }
@@ -435,15 +451,21 @@ function buildAsciiWireframePrompt(){return 'Create an ASCII wireframe for a mob
 function buildScreenMockupPrompt(){
  var placement=getPlacement();
  var shape=getPrimitiveShape();
+ var mockScope=v('decorationScope')||'all';
+ var scopeSummary='';
+ if(placement!=='None'){
+  if(mockScope==='buttons') scopeSummary='\nDecoration Scope = Buttons Only. Decoration appears ONLY on buttons (Primary / Secondary / Icon Button). Panels, popups, tabs, badges, icon frames, currency bars, lists, and navigation are completely plain.';
+  if(mockScope==='buttonsPanels') scopeSummary='\nDecoration Scope = Buttons & Panels. Decoration appears ONLY on buttons, panels, and popup windows. Tabs, badges, icon frames, currency bars, lists, and navigation are completely plain.';
+ }
  var decorationSummary='DECORATION SYSTEM RULE (read this first):\n'+
   'Decoration Placement = '+placement+'. This is the ONLY position where decoration exists.\n'+
   (placement==='Top Center'
    ? 'All four corners of every component are completely decoration-free.\nCorners contain only the rounded frame edge (corner radius). No ornament of any kind at any corner.\nGenerating a corner decoration on any component is a system violation.'
    : placement==='Corner'
-   ? 'Decoration exists only at the 4 corners of each component. No decoration at top center, bottom center, or edge midpoints.'
+   ? 'Decoration exists only at the 4 corners of each decorated component. No decoration at top center, bottom center, or edge midpoints.'
    : placement==='Mid Edge'
    ? 'Decoration exists only at edge midpoints. No decoration at corners.'
-   : 'No decoration anywhere. All components are completely clean.');
+   : 'No decoration anywhere. All components are completely clean.')+scopeSummary;
  var inheritanceBlock='Before creating the screen mockup, strictly inherit the established Design System Token Sheet and Component Sheet.\n\n'+
   'The screen mockup must be assembled using the same reusable components defined in the Component Sheet.\n'+
   'Treat the Component Sheet as the source of truth.\n'+
@@ -455,6 +477,8 @@ function buildScreenMockupPrompt(){
  if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders, no corner frame embellishments, no folk art corner borders, no ornamental corner frames';
  if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
+ if(placement!=='None' && mockScope==='buttons') placementNeg+=', no decoration on panels, no decoration on popups, no decoration on tabs, no decoration on badges, no decoration on icon frames, no decoration on lists, no decoration on navigation';
+ if(placement!=='None' && mockScope==='buttonsPanels') placementNeg+=', no decoration on tabs, no decoration on badges, no decoration on icon frames, no decoration on lists, no decoration on navigation';
  return decorationSummary+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\n'+inheritanceBlock+'\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nLayout must follow this ASCII wireframe exactly as the structural guide:\n'+v('wireframe')+'\n\n'+layoutSpacingText()+'\n\nDo not redesign the UI kit. Do not introduce new colors, new shapes, new materials, or new decoration rules.\nWorld illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate for a game screen.\n'+decorationGuide()+consistencyCheck+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, '+negativeText()+extraText();
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
