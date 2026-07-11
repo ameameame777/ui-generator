@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.29</title>
+<title>ゲームUIプロンプト生成ツール v1.30</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.29</h1>
+<h1>ゲームUIプロンプト生成ツール v1.30</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -487,8 +487,8 @@ function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read 
  'In this single response, generate FOUR (4) images — one image for each of the sections [01], [02], [03], [04] below.\n'+
  'Produce all 4 images in this one response. Do not stop after the first image. Do not ask for confirmation between images.\n'+
  'Each section is its own independent, full-size image — NOT a 2x2 grid, collage, contact sheet, or composite. Do not merge the four sections onto one canvas.\n'+
- 'Build them in order so each inherits the previous: [02] inherits the design tokens from [01]; [04] inherits [01] and [02]. Keep colors, shapes, materials, and decoration identical across all four.\n\n'+
- 'CONTINUATION RULE: If for any reason you cannot output all 4 images in one response, remember exactly which sections are already generated. When the user replies "continue", immediately generate the NEXT remaining section as its own full-size image — strictly inheriting the design system from the images already generated — and keep going until all 4 sections [01]-[04] exist as separate images. Never restart from [01], never change the established design.\n\n=== START OF SEQUENCE (generate all 4 images now) ===\n\n';
+ 'Build them in order. Each new image must visually match the images you generated earlier in this same response: [02] uses the design tokens shown in [01]; [04] uses [01] and [02]. Keep colors, shapes, materials, and decoration identical across all four.\n\n'+
+ 'CONTINUATION RULE: If for any reason you cannot output all 4 images in one response, remember exactly which sections are already generated. When the user replies "continue", immediately generate the NEXT remaining section as its own full-size image — visually matching the design system of the images already generated — and keep going until all 4 sections [01]-[04] exist as separate images. Never restart from [01], never change the design already shown.\n\n=== START OF SEQUENCE (generate all 4 images now) ===\n\n';
 }
 function buildPromptPack(){return promptPackHeader()+'[01 DESIGN SYSTEM TOKEN SHEET]\n'+buildDesignSystemPrompt()+'\n\n---\n\n[02 COMPONENT SHEET]\n'+buildComponentSheetPrompt()+'\n\n---\n\n[03 ASCII WIREFRAME]\n'+buildAsciiWireframePrompt()+'\n\n---\n\n[04 SCREEN MOCKUP]\n'+buildScreenMockupPrompt();}
 function generatePrompt(){
