@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.37</title>
+<title>ゲームUIプロンプト生成ツール v1.38</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.37</h1>
+<h1>ゲームUIプロンプト生成ツール v1.38</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -487,7 +487,7 @@ function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read 
  'Produce all 4 images in this one response. Do not stop after the first image. Do not ask for confirmation between images.\n'+
  'Each section is its own independent, full-size image — NOT a 2x2 grid, collage, contact sheet, or composite. Do not merge the four sections onto one canvas.\n'+
  'Build them in order. All four images depict ONE single design system — the GLOBAL DESIGN SPEC below. Because every section follows the same spec, colors, shapes, materials, and decoration must come out identical across all four images.\n\n'+
- 'CONTINUATION RULE: If for any reason you cannot output all 4 images in one response, remember exactly which sections are already generated. When the user replies "continue", immediately generate the NEXT remaining section as its own full-size image — following the same GLOBAL DESIGN SPEC so it stays consistent with the sections already generated — and keep going until all 4 sections [01]-[04] exist as separate images. Never restart from [01], never change the design already established.\n\n=== START OF SEQUENCE (generate all 4 images now) ===\n\n';
+ 'CONTINUATION RULE: If fewer than 4 images fit in one response, and the user replies "continue", produce the next missing section as its own full-size image, built from this same written specification.\n\n=== START OF SEQUENCE (generate all 4 images now) ===\n\n';
 }
 function buildPromptPack(){
  var placement=getPlacement(), shape=getPrimitiveShape();
@@ -507,7 +507,7 @@ function buildPromptPack(){
   '2. Corner radius — the radius value applied to a rectangle\n3. Shadow — offset Y, blur, and color\n4. Stroke / outline weight\n5. Grid unit and spacing scale\n6. Material / lighting — one flat surface\n'+decDiagram+'\n\n'+
   'Presentation: flat reference-sheet layout, white studio background, no environment, no world illustration. This is a design foundation board, not a UI kit and not a game screen.';
  var s02='[02 COMPONENT SHEET]\n'+
-  'Create a clean game UI COMPONENT SHEET following the GLOBAL DESIGN SPEC, using the exact same design tokens as section [01].\n'+
+  'Create a clean game UI COMPONENT SHEET following the GLOBAL DESIGN SPEC.\n'+
   'No text labels, no mascot, no character, no phone mockup, no decorative background.\n\n'+
   'Reusable Components:\n'+partsText()+'\n\n'+
   'All components share the same radius, stroke, shadow, highlight, material, color, and depth. Decoration follows the DECORATION SCOPE in the GLOBAL DESIGN SPEC — components outside the scope stay completely plain.\n'+
@@ -524,9 +524,9 @@ function buildPromptPack(){
  if(placement!=='None' && mockScope==='buttons') packNeg+=', no decoration on panels, popups, tabs, badges, icon frames, lists, or navigation';
  if(placement!=='None' && mockScope==='buttonsPanels') packNeg+=', no decoration on tabs, badges, icon frames, lists, or navigation';
  var s04='[04 SCREEN MOCKUP]\n'+
-  'Create a mobile game SCREEN MOCKUP following the GLOBAL DESIGN SPEC, assembled ONLY from the reusable component kit defined in section [02].\n'+
-  'Do not reinterpret, redesign, simplify, or invent component shapes.\n'+
-  'Every component in this screen must be identical to its section [02] counterpart in: corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration placement / primitive / geometry, proportions, and internal structure of composite components.\n\n'+
+  'Create a mobile game SCREEN MOCKUP following the GLOBAL DESIGN SPEC, assembled ONLY from these reusable components:\n'+partsText()+'\n\n'+
+  'Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n'+
+  'Every instance of a component type is drawn ONE consistent way across the whole screen — consistent in: corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration placement / primitive / geometry, proportions, and internal structure of composite components.\n\n'+
   'Fill Treatment Rule: solid-filled buttons stay solid-filled here — never convert them into dark outline-only versions. The Secondary color must actually appear on the screen\'s sub buttons. Composite components (e.g. a combined currency bar) keep the same internal structure — do not split or merge them.\n\n'+
   'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\n'+
   'Use this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\n'+
