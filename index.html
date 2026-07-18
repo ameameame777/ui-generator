@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.44</title>
+<title>ゲームUIプロンプト生成ツール v1.45</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.44</h1>
+<h1>ゲームUIプロンプト生成ツール v1.45</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -575,27 +575,36 @@ var WIREFRAMES={
 'section or a framed card.\n'+
 'If a featured character appears in the key visual, the character stands in\n'+
 'the CHARACTER SAFE ZONE (vertical center of the screen). NO UI element may\n'+
-'overlap the character: keep UI in the top bar and bottom cluster only, and\n'+
-'leave the middle of the screen open so the character is fully visible.\n'+
+'overlap the character: keep UI in the top bar, the left/right edge columns,\n'+
+'and the bottom cluster, and leave the center of the screen open so the\n'+
+'character is fully visible.\n'+
 '\n'+
 'UI LAYER (on top of the background):\n'+
-'+------------------------------------------+\n'+
-'| [AVATAR Lv64] [EXP=====65%]  [⚙SETTING]  |\n'+
-'| [COIN 12,450 +] [GEM 320 +] [ENERGY 76+] |\n'+
-'|                                          |\n'+
-'|                                          |\n'+
-'|         == CHARACTER SAFE ZONE ==         |\n'+
-'|     (featured character fully visible,    |\n'+
-'|      no UI overlapping this area)         |\n'+
-'|                                          |\n'+
-'|                                          |\n'+
-'|  [NEWS]                    [LOGIN BONUS]  |\n'+
-'| [DAILY MISSION   2/3 ====]         [GO >] |\n'+
-'| [EVENT BANNER  - limited time  1d 4h]    |\n'+
-'| [FRIENDS] [GUILD] [MAILBOX] [RANKING]    |\n'+
-'|        [  PRIMARY CTA: START / PLAY  ]    |\n'+
-'| [HOME] [CHARA] [QUEST] [SHOP] [MENU]     |\n'+
-'+------------------------------------------+',
+'+---------------------------------------------------------+\n'+
+'| [COIN  12,450  +]   [GEM  320  +]   [ENERGY  76 / 100]  |\n'+
+'|                                                         |\n'+
+'| [AVATAR] Lv64  [EXP ======== 65%]          [⚙ SETTING] |\n'+
+'+---------------------------------------------------------+\n'+
+'|                                                         |\n'+
+'| [NEWS]                                     [LOGIN BONUS]|\n'+
+'|                                                         |\n'+
+'| [FRIENDS]         CHARACTER SAFE ZONE          [MAILBOX]|\n'+
+'|                                                         |\n'+
+'| [GUILD]       Featured character displayed      [RANKING]|\n'+
+'|               fully, with no UI overlap                  |\n'+
+'|                                                         |\n'+
+'|                                                         |\n'+
+'|                                                         |\n'+
+'|                                                         |\n'+
+'+---------------------------------------------------------+\n'+
+'| [DAILY MISSION]   2 / 3   [======----]          [GO >] |\n'+
+'|                                                         |\n'+
+'| [ EVENT BANNER ]   LIMITED EVENT              1d 4h    |\n'+
+'|                                                         |\n'+
+'|              [ ▶  START / PLAY   ⚡ 3 ]                 |\n'+
+'+---------------------------------------------------------+\n'+
+'| [ CHARA ]    [ QUEST ]    [ HOME ]    [ SHOP ]   [ MENU ]|\n'+
+'+---------------------------------------------------------+',
 'Character Select':
 '+------------------------------------------+\n'+
 '| [< BACK]   CHARACTER SELECT   [SORT v]    |\n'+
