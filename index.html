@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.47</title>
+<title>ゲームUIプロンプト生成ツール v1.48</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.47</h1>
+<h1>ゲームUIプロンプト生成ツール v1.48</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -605,9 +605,13 @@ var WIREFRAMES={
 '+---------------------------------------------------------+\n'+
 '\n'+
 'SIDE ICON BUTTONS: NEWS, LOGIN BONUS, FRIENDS, MAILBOX, GUILD, and RANKING\n'+
-'are square Icon Buttons — a pictogram icon inside the button, with a small\n'+
-'text label displayed BELOW the icon (icon-with-caption style). The label is\n'+
-'outside the button shape, not text inside a wide button.',
+'are FRAMELESS illustrated icons — each is a small illustration that reflects\n'+
+'the world / theme of the game (e.g. a themed scroll for NEWS, a themed gift\n'+
+'or chest for LOGIN BONUS), with a small text label displayed BELOW the icon.\n'+
+'NO square frame, NO button plate, NO background shape behind the icon — the\n'+
+'illustration itself sits directly on the key visual, caption underneath.\n'+
+'These icons are decorative illustrations, not UI kit Icon Buttons, so the\n'+
+'UI color palette and decoration rules do not apply to them.',
 'Character Select':
 '+------------------------------------------+\n'+
 '| [< BACK]   CHARACTER SELECT   [SORT v]    |\n'+
