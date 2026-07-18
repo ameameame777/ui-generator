@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.51</title>
+<title>ゲームUIプロンプト生成ツール v1.52</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.51</h1>
+<h1>ゲームUIプロンプト生成ツール v1.52</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -293,6 +293,83 @@ function rulesText(){
  var rows=[['Corner Radius',v('radius')+'px',checked('lockRadius')],['Stroke Width',v('stroke')+'px',checked('lockStroke')],['Shadow Offset Y',v('shadowY')+'px',checked('lockShadowY')],['Shadow Blur',v('shadowBlur')+'px',checked('lockShadowBlur')],['Button Height',v('buttonHeight')+'px',checked('lockButtonHeight')],['Panel Padding',v('panelPadding')+'px',checked('lockPanelPadding')],['Icon Size',v('iconSize')+'px',checked('lockIconSize')],['Grid Unit',v('gridUnit')+'px',checked('lockGridUnit')]];
  return rows.map(function(r){return '- '+r[0]+': '+r[1]+(r[2]?' [LOCKED: do not change]':'')}).join('\n')+'\n'+componentGapText();
 }
+// ===== Visual descriptor dictionary: turns bare option labels into renderable language =====
+var STYLE_DESC={
+ '3D Cartoon（3Dカートゥーン）':'exaggerated rounded 3D forms, vivid saturated colors, toy-like glossy highlights',
+ 'Matte 3D（マット3D）':'soft 3D volumes with suppressed gloss and gentle diffuse shading',
+ 'Flat Design（フラットデザイン）':'pure flat shapes, no gradients or bevels, crisp geometric color fields',
+ 'Neumorphism（ニューモーフィズム）':'soft extruded surfaces with subtle inner and outer shadows on a same-tone background',
+ 'Skeuomorphism（スキュモーフィズム）':'realistic material imitation with detailed textures, stitches and bevels',
+ 'SF HUD':'holographic heads-up display with thin luminous linework, faceted panels and a faint scanline shimmer',
+ '2D Illustrated（手描きイラスト）':'hand-painted brushwork with visible strokes and storybook warmth',
+ 'Pixel Art（ピクセルアート）':'crisp pixel grid, limited palette, hard edges, no anti-aliasing',
+ 'Isometric（アイソメトリック）':'clean isometric projection with extruded depth',
+ 'Paper Cut（切り絵）':'layered cut-paper sheets with soft shadows between layers',
+ 'Sticker（ステッカー）':'die-cut sticker look with a thick white outline and glossy surface'
+};
+var MATERIAL_DESC={
+ 'Soft Plastic（柔らかいプラスチック）':'smooth injection-molded plastic with a soft sheen and slightly squishy look',
+ 'Hard Plastic（硬質プラスチック）':'rigid glossy plastic with sharp specular highlights',
+ 'Wood（木材）':'polished wood grain with warm varnish',
+ 'Metal（金属）':'brushed metal with machined edges and bright rim highlights',
+ 'Stone（石材）':'carved stone with chiseled edges and subtle roughness',
+ 'Crystal / Glass（ガラス・水晶）':'translucent glass with refraction and sharp highlights',
+ 'Paper / Cardboard（紙・厚紙）':'matte paper fiber texture with die-cut edges',
+ 'Fabric / Felt（布・フェルト）':'soft felt weave with stitched borders',
+ 'Leather（革）':'grained leather with stitched seams and embossed accents',
+ 'Energy / Hologram（ホログラム）':'semi-transparent glowing energy surface with edge light bleed and faint scanlines'
+};
+var LIGHTING_DESC={
+ '柔らかい光沢':'soft glossy highlights with gentle falloff',
+ 'フラット':'flat even lighting with no specular highlights',
+ 'マット':'diffuse matte shading with minimal reflection',
+ '強い光沢':'strong candy-gloss speculars and bright reflections',
+ 'ネオン発光':'self-emissive neon glow with bloom around every edge'
+};
+var SHAPE_DESC={
+ '角丸':'generously rounded corners',
+ '太くて厚い':'thick chunky slab-like volumes',
+ '薄く軽い':'thin lightweight planes',
+ 'シャープ':'sharp angular silhouettes',
+ 'レイヤード':'stacked layered plates with visible depth offsets'
+};
+var FORM_DESC={
+ 'Rounded':'softly rounded overall mass',
+ 'Chunky':'thick heavy proportions with bold presence',
+ 'Inflated':'puffed-up balloon-like swelling',
+ 'Asymmetric':'deliberately asymmetric silhouette — one side straight, the other side angled or extended',
+ 'Organic':'irregular organic contours like smooth pebbles'
+};
+var EDGE_DESC={
+ 'Chamfer':'corners sliced by flat 45-degree cuts',
+ 'Corner Cut':'square corner cutouts',
+ 'Notch':'small rectangular notches cut into the edges like machined index marks',
+ 'Scallop':'repeated concave arc cutouts along the edges, like a postage-stamp perforation of half-circles',
+ 'Stepped':'a staircase-stepped edge profile like a ziggurat silhouette'
+};
+var FRAME_DESC={
+ 'Layered':'two or three stacked plates slightly offset in depth',
+ 'Double Frame':'two parallel border lines with a clear gap channel between them',
+ 'Floating Frame':'a border floating detached a few pixels outside the component body',
+ 'Split Frame':'a border broken into separate segments with deliberate gaps',
+ 'Bracket Frame':'corner-only bracket marks like a camera focus target'
+};
+// Primitive triples: geometric construction + real-world analogy + countable check
+var PRIMITIVE_TRIPLE={
+ 'Step':{geo:'the corner is replaced by exactly 3 equal right-angle stair steps',analogy:'like a ziggurat / pixel-staircase silhouette',count:'a viewer must be able to count exactly 3 steps on every decorated corner — no more, no fewer'},
+ 'Notch':{geo:'one small clean rectangular cut into the frame at the decoration position',analogy:'like a machined index notch on a precision metal part',count:'every decorated position shows one identical notch — same size, same depth everywhere'},
+ 'Arch':{geo:'a small semicircular arch curve integrated into the border',analogy:'like a miniature doorway arch',count:'identical arch size at every decorated position'},
+ 'Gate':{geo:'a small gate-post profile rising from the border',analogy:'like a miniature torii gate silhouette',count:'identical gate profile at every decorated position'},
+ 'Cog':{geo:'a short run of square gear teeth along the border',analogy:'like the edge of a gear wheel',count:'same tooth count at every decorated position'},
+ 'Shield':{geo:'a small shield outline merged into the border',analogy:'like a tiny heraldic shield crest',count:'identical shield size at every decorated position'},
+ 'Gem':{geo:'a small faceted diamond stud embedded in the border',analogy:'like a bezel-set jewel on a ring',count:'one gem per decorated position, identical cut'},
+ 'Seal':{geo:'a small circular medallion pressed into the border',analogy:'like a wax seal stamp',count:'identical medallion at every decorated position'},
+ 'Crest':{geo:'a compact ornamental crest rising from the border',analogy:'like a small emblem on a plaque',count:'identical crest at every decorated position'},
+ 'Braid':{geo:'a short woven strip inlaid along the border',analogy:'like a braided trim on fabric',count:'identical braid segment at every decorated position'},
+ 'Relief':{geo:'a shallow carved molding profile in the border',analogy:'like carved relief molding on furniture',count:'identical carving depth at every decorated position'},
+ 'Leaf':{geo:'a single small leaf flourish grown from the border',analogy:'like a minimal laurel leaf accent',count:'one leaf per decorated position, identical shape'}
+};
+function withDesc(map,key){return map[key]?key+' — '+map[key]:key;}
 function unifiedContext(){
  var mood=v('mood'), era=v('era'), culture=v('culture');
  var style=v('style'), philosophy=v('philosophy');
@@ -300,7 +377,7 @@ function unifiedContext(){
 }
 function commonContext(){
  var decStr=v('decorationRule')==='None / 装飾なし'?'Decoration Rule: None':'Decoration Rule: '+v('decorationRule')+'\nDecoration Level: '+v('decoration');
- return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+v('style')+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+v('material')+'\nShape Language: '+v('shape')+'\nLighting: '+v('lighting')+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+colorPaletteText()+'\n'+decStr+'\nForm Modifier: '+v('formModifier')+'\nEdge Modifier: '+v('edgeModifier')+'\nFrame Modifier: '+v('frameModifier')+'\n\nSystem Rules:\n'+rulesText();
+ return unifiedContext()+'\nPlatform: '+v('platform')+'\nVisual Style: '+withDesc(STYLE_DESC,v('style'))+'\nDesign Philosophy: '+v('philosophy')+'\nMaterial: '+withDesc(MATERIAL_DESC,v('material'))+'\nShape Language: '+withDesc(SHAPE_DESC,v('shape'))+'\nLighting: '+withDesc(LIGHTING_DESC,v('lighting'))+'\nAnimation Feel: '+v('animation')+'\n\nCulture / Region: '+v('culture')+'\nEra / Reference: '+v('era')+'\nMood: '+v('mood')+'\n\nColor System: '+v('colorSystem')+'\n'+colorPaletteText()+'\n'+decStr+'\nForm Modifier: '+withDesc(FORM_DESC,v('formModifier'))+'\nEdge Modifier: '+withDesc(EDGE_DESC,v('edgeModifier'))+'\nFrame Modifier: '+withDesc(FRAME_DESC,v('frameModifier'))+'\n\nSystem Rules:\n'+rulesText();
 }
 function negativeText(){var n=getNeg(); var avoid=v('cultureAvoid').trim(); if(avoid)n.push('avoid: '+avoid); return n.join(', ')}
 function partsText(){return getParts().map(function(p){return '- '+p}).join('\n')}
@@ -472,13 +549,60 @@ function mockupDecorationBlock(placement, shape, mockScope){
   : mockScope==='buttonsPanels'
   ? 'Scope: decoration appears ONLY on buttons, panels, and popup windows. Tabs, badges, icon frames, currency bars, lists, and navigation are completely plain, while sharing the same radius, stroke, material, and colors.'
   : 'Scope: apply the decoration consistently to ALL components (buttons, panels, tabs, icon frames, badges, reward cards, lists, navigation).';
+ var t=PRIMITIVE_TRIPLE[shape];
+ var tripleLines=t?('- Construction: '+t.geo+'.\n- Looks '+t.analogy+'.\n- Check: '+t.count+'.\n'):'';
  return 'DECORATION RULE (single source of truth — no other ornament exists anywhere):\n'+
  '- Placement: '+placement+' — '+placeLine+'\n'+
  '- Primitive: '+shape+' — the ONLY decoration shape on this screen. Never use: '+altShapes+', swords, wings, stars, ribbons, or any other ornament.\n'+
- (shape==='Step'&&placement==='Corner'?'- Step geometry: exactly 3 steps per decorated corner, 90-degree geometry only, same step count / depth ratio / position on every decorated component.\n':'')+
+ tripleLines+
  '- Intensity: '+decorationLevelText()+'.\n'+
  '- Integration: grown from or carved into the frame border — never a separate floating ornament pasted on top.\n'+
  '- '+scopeLine;
+}
+function styleThesisText(){
+ var placement=getPlacement(), shape=getPrimitiveShape();
+ var bits=[];
+ bits.push('A polished, production-quality mobile game '+v('screenType').toUpperCase()+' screen');
+ var sd=STYLE_DESC[v('style')]; bits.push('in '+v('style')+' style ('+(sd||'')+')');
+ var parts2=[];
+ var md=MATERIAL_DESC[v('material')]; if(md) parts2.push('UI chrome made of '+md);
+ var shd=SHAPE_DESC[v('shape')]; if(shd) parts2.push(shd);
+ var fd=FORM_DESC[v('formModifier')]; if(fd) parts2.push(fd);
+ var ed=EDGE_DESC[v('edgeModifier')]; if(ed) parts2.push('edges with '+ed);
+ var frd=FRAME_DESC[v('frameModifier')]; if(frd) parts2.push('frames as '+frd);
+ var ld=LIGHTING_DESC[v('lighting')]; if(ld) parts2.push(ld);
+ if(parts2.length) bits.push('— '+parts2.join('; '));
+ if(placement!=='None'&&shape){
+  var t=PRIMITIVE_TRIPLE[shape];
+  bits.push('. Every decorated button carries a small '+shape+' ornament at the '+placement.toLowerCase()+' position'+(t?(', '+t.analogy):''));
+ }
+ bits.push('. The UI is colored strictly in '+el('cPrimary').value+' (primary), '+el('cSecondary2').value+' (secondary) and '+el('cBackground').value+' (background), floating over a freely-colored painted world illustration');
+ bits.push('. '+v('mood')+' mood, '+v('era')+' era.');
+ return 'STYLE THESIS (this one paragraph defines the finished look — everything below refines it):\n'+bits.join(' ').replace(/ \./g,'.').replace(/  +/g,' ');
+}
+function componentManifestText(placement, shape, mockScope){
+ var BUTTONS=['Primary Button','Secondary Button','Icon Button'];
+ var PANELS=['Panel','Popup Window'];
+ var items=getParts().slice(); if(items.indexOf('Bottom Navigation')<0) items.push('Bottom Navigation');
+ var lines=items.map(function(p){
+  var yes = placement!=='None' && (
+   mockScope==='all' ? true :
+   mockScope==='buttonsPanels' ? (BUTTONS.indexOf(p)>=0||PANELS.indexOf(p)>=0) :
+   BUTTONS.indexOf(p)>=0 );
+  return '- '+p+': decoration '+(yes?('YES — '+shape+' at '+placement):'NO — completely plain, no ornament of any kind');
+ });
+ return 'COMPONENT DECORATION MANIFEST (per-component, follow exactly):\n'+lines.join('\n');
+}
+function secondaryJobText(){
+ var s=el('cSecondary2').value;
+ var jobs=[], parts=getParts();
+ if(parts.indexOf('Secondary Button')>=0) jobs.push('the solid fill of every Secondary Button');
+ if(parts.indexOf('Tab')>=0) jobs.push('the active / selected tab highlight');
+ if(parts.indexOf('Progress Bar')>=0||v('screenType')==='Home') jobs.push('the EXP / progress bar fill');
+ if(parts.indexOf('Badge')>=0) jobs.push('badge backgrounds');
+ jobs.push('the selected item highlight in the bottom navigation');
+ jobs=jobs.slice(0,3);
+ return 'SECONDARY COLOR CONTRACT: the secondary color '+s+' has concrete jobs on this screen — it is used for: '+jobs.join('; ')+'. It must be clearly visible in at least '+Math.min(2,jobs.length)+' of these places. If none of these elements exist on the screen, the contract is waived.';
 }
 function buildScreenMockupPrompt(){
  var placement=getPlacement();
@@ -495,7 +619,7 @@ function buildScreenMockupPrompt(){
  if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
  if(placement!=='None' && mockScope==='buttons') placementNeg+=', no decoration on panels, popups, tabs, badges, icon frames, currency bars, lists, or navigation';
  if(placement!=='None' && mockScope==='buttonsPanels') placementNeg+=', no decoration on tabs, badges, icon frames, currency bars, lists, or navigation';
- return twoLayerRuleText()+'\n\n'+mockupDecorationBlock(placement,shape,mockScope)+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\nThis is a pure TEXT-TO-IMAGE task: create one brand-new image from the written specification below. No reference image is attached or required.\nThe screen is assembled from one consistent reusable component kit defined by this specification. Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nUse this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\nDESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room, resize and reproportion elements, and space out tightly stacked rows. Keep the element inventory and vertical order; sizes, gaps, and visual rhythm are yours to design for a relaxed, premium feel. This freedom applies to LAYOUT ONLY — never to the UI layer\'s colors, shapes, or decoration.\n\n'+layoutSpacingText()+'\n\n'+consistency+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter, '+negativeText()+extraText();
+ return styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+mockupDecorationBlock(placement,shape,mockScope)+'\n\n'+componentManifestText(placement,shape,mockScope)+'\n\n'+secondaryJobText()+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\nThis is a pure TEXT-TO-IMAGE task: create one brand-new image from the written specification below. No reference image is attached or required.\nThe screen is assembled from one consistent reusable component kit defined by this specification. Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nUse this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\nDESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room, resize and reproportion elements, and space out tightly stacked rows. Keep the element inventory and vertical order; sizes, gaps, and visual rhythm are yours to design for a relaxed, premium feel. This freedom applies to LAYOUT ONLY — never to the UI layer\'s colors, shapes, or decoration.\n\n'+layoutSpacingText()+'\n\n'+consistency+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter, '+negativeText()+extraText();
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
@@ -540,10 +664,13 @@ function buildPromptPack(){
  if(placement!=='None' && mockScope==='buttons') packNeg+=', no decoration on panels, popups, tabs, badges, icon frames, lists, or navigation';
  if(placement!=='None' && mockScope==='buttonsPanels') packNeg+=', no decoration on tabs, badges, icon frames, lists, or navigation';
  var s04='[04 SCREEN MOCKUP]\n'+
+  styleThesisText()+'\n\n'+
   'Create a mobile game SCREEN MOCKUP following the GLOBAL DESIGN SPEC, assembled ONLY from these reusable components:\n'+partsText()+'\n\n'+
   'Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n'+
   'Every instance of a component type is drawn ONE consistent way across the whole screen — consistent in: corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration placement / primitive / geometry, proportions, and internal structure of composite components.\n\n'+
-  'Fill Treatment Rule: solid-filled buttons stay solid-filled here — never convert them into dark outline-only versions. The Secondary color must actually appear on the screen\'s sub buttons. Composite components (e.g. a combined currency bar) keep the same internal structure — do not split or merge them.\n\n'+
+  componentManifestText(placement,shape,mockScope)+'\n\n'+
+  secondaryJobText()+'\n\n'+
+  'Fill Treatment Rule: solid-filled buttons stay solid-filled here — never convert them into dark outline-only versions. Composite components (e.g. a combined currency bar) keep the same internal structure — do not split or merge them.\n\n'+
   'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\n'+
   'Use this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\n'+
   'DESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room beyond the wireframe, resize and reproportion elements, and space out rows that appear tightly stacked in the wireframe. Keep the element inventory and vertical order; everything else (sizes, gaps, visual rhythm) is yours to design for a relaxed, premium feel.\n\n'+
