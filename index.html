@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.53</h1>
+<h1>ゲームUIプロンプト生成ツール v1.54</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -623,10 +623,10 @@ function buildScreenMockupPrompt(){
 }
 function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
- 'Generate EXACTLY ONE image per response. For this first response, generate section [01] only. Do not generate sections [02], [03], or [04] yet.\n'+
+ 'Generate EXACTLY ONE image per response. This sequence has THREE generated images: [01], [02], then [04]. Section [03] is a text-only STRUCTURAL CONTRACT used to build [04]; never generate an image for [03]. For this first response, generate section [01] only.\n'+
  'Each section is its own independent, full-size image — NOT a 2x2 grid, collage, contact sheet, or composite. Never merge multiple sections onto one canvas.\n'+
- 'Build the sections in order. All four images depict ONE single design system — the GLOBAL DESIGN SPEC below. Because every section follows the same spec, colors, shapes, materials, and decoration must come out identical across all four images.\n\n'+
- 'CONTINUATION RULE: When the user replies "continue", generate EXACTLY ONE image for the next missing section only. Advance in order from [01] to [04], never repeat a completed section, and never generate more than one section in a response. After [04], state that the sequence is complete instead of generating another image.\n\n=== START OF SEQUENCE (generate section [01] only now) ===\n\n';
+ 'Build the images in order. All three generated images depict ONE single design system. Treat the already-generated [01] and [02] images in this conversation as visual continuity references for later images: preserve their exact colors, component geometry, material, stroke, shadow, and decoration decisions.\n\n'+
+ 'CONTINUATION RULE: When the user replies "continue", generate EXACTLY ONE image for the next deliverable only. Advance [01] -> [02] -> [04]. Never generate [03], never repeat a completed deliverable, and never generate more than one image in a response. After [04], state that the sequence is complete instead of generating another image.\n\n=== START OF SEQUENCE (generate section [01] only now) ===\n\n';
 }
 function buildPromptPack(){
  var placement=getPlacement(), shape=getPrimitiveShape();
@@ -634,7 +634,7 @@ function buildPromptPack(){
  var globalSpec='=== GLOBAL DESIGN SPEC — applies to EVERY section below. Written once here; every image must follow it. ===\n\n'+
   genreText()+motifText()+commonContext()+'\n\n'+decorationGuide()+'\n\n'+
   'Global Negative Prompt (applies to all image sections): '+negativeText()+extraText()+
-  '\n\n=== SECTIONS — one image each ===\n\n';
+  '\n\n=== GENERATED DELIVERABLES AND STRUCTURAL CONTRACT ===\n\n';
  var decDiagram=(placement!=='None' && shape)
   ? '7. Decoration diagram — show ONE single Decoration Primitive ('+shape+') at Placement ('+placement+') only: primitive shape, placement position, scale, integration into frame geometry.'
   : '7. Decoration: None — components are clean with no ornamental elements.';
@@ -647,23 +647,37 @@ function buildPromptPack(){
   'Presentation: flat reference-sheet layout, white studio background, no environment, no world illustration. This is a design foundation board, not a UI kit and not a game screen.';
  var s02='[02 COMPONENT SHEET]\n'+
   'Create a clean game UI COMPONENT SHEET following the GLOBAL DESIGN SPEC.\n'+
-  'No text labels, no mascot, no character, no phone mockup, no decorative background.\n\n'+
+  'Use concise labels only to identify component types and states. No explanatory paragraphs, mascot, character, phone mockup, or decorative background.\n\n'+
   'Reusable Components:\n'+partsText()+'\n\n'+
   'All components share the same radius, stroke, shadow, highlight, material, color, and depth. Decoration follows the DECORATION SCOPE in the GLOBAL DESIGN SPEC — components outside the scope stay completely plain.\n\n'+
   stateRulesText()+'\n'+
+  'This sheet is the visual source of truth for [04]. Component silhouettes, proportions, fill treatment, frame construction, material, and decoration must be reused without redesign in the final mockup.\n'+
   'Production-ready reusable UI parts only.';
- var s03='[03 ASCII WIREFRAME]\n'+
-  'Create an ASCII wireframe for a mobile game screen, rendered as a plain monochrome text-diagram image (ASCII boxes on a plain background — structure only, no visual styling, no colors from the palette).\n\n'+
+ var s03='[03 STRUCTURAL CONTRACT — TEXT ONLY, DO NOT GENERATE AN IMAGE]\n'+
+  'This contract controls the composition of [04]. It is not a generated deliverable.\n\n'+
   'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n\n'+
-  'Use simple ASCII boxes. Structure only — no visual style.\n\nCurrent draft wireframe:\n'+v('wireframe');
+  'The following ASCII wireframe and its written instructions are mandatory. They define the complete element inventory, grouping, layer, left/right placement, and top-to-bottom order for [04].\n\n'+
+  'STRUCTURE LOCK:\n'+
+  '- Include every specified element exactly once unless the wireframe explicitly repeats it.\n'+
+  '- Do not add, remove, replace, merge, or repurpose any UI element.\n'+
+  '- Preserve left/right placement, grouping, and top-to-bottom order.\n'+
+  '- Text instructions attached to the wireframe override any generic component assumption.\n'+
+  '- Only dimensions, spacing, and breathing room may be refined for professional polish.\n\n'+
+  'MANDATORY ASCII WIREFRAME AND INSTRUCTIONS:\n'+v('wireframe');
  var packNeg='no floating decorations, no sticker-like ornaments pasted over frames';
  if(placement==='Top Center') packNeg+=', no corner ornaments, no corner brackets, no gold corner borders';
  if(placement==='Corner') packNeg+=', no top center decorations, no centered top ornaments';
  if(placement==='None') packNeg+=', no ornaments, no decorative borders';
  if(placement!=='None' && mockScope==='buttons') packNeg+=', no decoration on panels, popups, tabs, badges, icon frames, lists, or navigation';
  if(placement!=='None' && mockScope==='buttonsPanels') packNeg+=', no decoration on tabs, badges, icon frames, lists, or navigation';
- var s04='[04 SCREEN MOCKUP]\n'+
+ var s04='[04 SCREEN MOCKUP — FINAL PRIMARY DELIVERABLE]\n'+
   styleThesisText()+'\n\n'+
+  'This is the most important deliverable. Create ONE finished, production-quality game screen — not a design document. Output the screen artwork only: no title, annotations, callout lines, measurements, legends, color swatches, specification tables, explanatory footer, device frame, or white presentation-board margin.\n\n'+
+  'INHERITANCE CONTRACT:\n'+
+  '- [01] is the immutable source of truth for design tokens.\n'+
+  '- [02] is the immutable source of truth for reusable component appearance. Reuse those component designs; do not create a new kit for this screen.\n'+
+  '- [03] is the immutable source of truth for element inventory and layout structure.\n'+
+  '- If aesthetic improvisation conflicts with [01], [02], or [03], the contracts win.\n\n'+
   'Create a mobile game SCREEN MOCKUP following the GLOBAL DESIGN SPEC, assembled ONLY from these reusable components:\n'+partsText()+'\n\n'+
   'Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n'+
   'Every instance of a component type is drawn ONE consistent way across the whole screen — consistent in: corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration placement / primitive / geometry, proportions, and internal structure of composite components.\n\n'+
@@ -671,13 +685,19 @@ function buildPromptPack(){
   secondaryJobText()+'\n\n'+
   'Fill Treatment Rule: solid-filled buttons stay solid-filled here — never convert them into dark outline-only versions. Composite components (e.g. a combined currency bar) keep the same internal structure — do not split or merge them.\n\n'+
   'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\n'+
-  'Use this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\n'+
-  'DESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room beyond the wireframe, resize and reproportion elements, and space out rows that appear tightly stacked in the wireframe. Keep the element inventory and vertical order; everything else (sizes, gaps, visual rhythm) is yours to design for a relaxed, premium feel.\n\n'+
+  'Apply [03] exactly. The ASCII wireframe and every written instruction attached to it are a STRUCTURAL CONTRACT, not a loose reference:\n'+v('wireframe')+'\n\n'+
+  'LIMITED DESIGN FREEDOM: You may refine only sizes, gaps, alignment, and visual rhythm to create comfortable spacing. You may NOT change the element inventory, grouping, layer assignment, left/right placement, or top-to-bottom order. Do not add promotional banners, missions, reward cards, status panels, explanatory content, or any other element absent from [03].\n\n'+
   layoutSpacingText()+'\n\n'+
   'World illustration, hero art, character art, item art, and background visuals are allowed and encouraged where appropriate.\n'+
   'Do not introduce new colors, shapes, materials, or decoration rules on UI components.\n\n'+
-  twoLayerRuleText()+'\n'+
-  'Section Negative Prompt: '+packNeg+', no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
+  twoLayerRuleText()+'\n\n'+
+  'SILENT PRE-FLIGHT CHECK — before generating, verify all of these internally and fix any violation; do not print the checklist:\n'+
+  '1. Every [03] element exists exactly as specified, with no extra UI.\n'+
+  '2. Component appearance matches [02], and all tokens match [01].\n'+
+  '3. Special instructions such as frameless illustrated side icons and full-screen background art are followed literally.\n'+
+  '4. The output is a clean game screen only, with no presentation-board content.\n'+
+  '5. Decoration scope and secondary-color jobs are satisfied.\n\n'+
+  'Section Negative Prompt: '+packNeg+', extra UI not present in the structural contract, annotations, callout lines, measurements, legends, specification tables, explanatory footer, presentation board, device frame, white outer margin, no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
  return promptPackHeader()+globalSpec+s01+'\n\n---\n\n'+s02+'\n\n---\n\n'+s03+'\n\n---\n\n'+s04;
 }
 function generatePrompt(){
