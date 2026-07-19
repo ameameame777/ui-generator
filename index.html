@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.55</h1>
+<h1>ゲームUIプロンプト生成ツール v1.56</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -48,6 +48,14 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
     <button type="button" class="mode-btn" id="btn_componentSheet" onclick="setMode('componentSheet')">Component Sheet</button>
     <button type="button" class="mode-btn" id="btn_screenMockup" onclick="setMode('screenMockup')">Screen Mockup</button>
     <button type="button" class="mode-btn" id="btn_promptPack" onclick="setMode('promptPack')">Prompt Pack</button>
+  </div>
+  <div id="promptPackStepBox" class="hidden" style="margin-top:14px">
+    <label>Prompt Pack Step</label>
+    <select id="promptPackStep" onchange="el('status').textContent=this.value==='component'?'Component Sheet用プロンプトを生成します。':'同じ画像生成チャットへ送るFinal Mockup用プロンプトを生成します。'">
+      <option value="component">1. Component Sheet Prompt</option>
+      <option value="final">2. Final Mockup Prompt</option>
+    </select>
+    <div class="hint">1枚目を生成後、同じ画像生成チャットでStep 2のプロンプトを送信してください。continueだけでは進めません。</div>
   </div>
 
   <div class="section-title">GAME GENRE</div>
@@ -204,6 +212,7 @@ function setMode(mode){
  ['designSystem','componentSheet','screenMockup','promptPack'].forEach(function(m){el('btn_'+m).classList.toggle('active',m===mode)});
  var showScreen=(mode==='screenMockup'||mode==='promptPack');
  el('screenSettings').classList.toggle('hidden',!showScreen);
+ el('promptPackStepBox').classList.toggle('hidden',mode!=='promptPack');
  if(showScreen && !v('wireframe').trim()) applyWireframeTemplate();
 }
 function updateHints(){
@@ -701,14 +710,14 @@ function legacyBuildPromptPack(){
   'Section Negative Prompt: '+packNeg+', extra UI not present in the structural contract, annotations, callout lines, measurements, legends, specification tables, explanatory footer, presentation board, device frame, white outer margin, no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
  return legacyPromptPackHeader()+globalSpec+s01+'\n\n---\n\n'+s02+'\n\n---\n\n'+s03+'\n\n---\n\n'+s04;
 }
-function promptPackHeader(){return 'IMPORTANT — TWO-IMAGE GENERATION SEQUENCE:\n'+
+function twoImagePromptPackHeader(){return 'IMPORTANT — TWO-IMAGE GENERATION SEQUENCE:\n'+
  'This is a pure TEXT-TO-IMAGE task. Generate EXACTLY ONE full-size image per response, never a collage or composite.\n'+
  'There are two image deliverables: [02] COMPONENT SHEET, then [04] FINAL SCREEN MOCKUP. [01] and [03] are text-only contracts; never generate images for them.\n'+
  'NOW: generate [02] only. Do not generate [04] yet.\n'+
  'WHEN THE USER REPLIES "continue": generate [04] only, using the already-generated [02] image in this conversation as the visual source of truth. Preserve its component geometry, colors, material, stroke, shadow, and decoration.\n'+
  'After [04], the sequence is complete. Never repeat a deliverable or generate more than one image per response.\n\n';
 }
-function buildPromptPack(){
+function buildTwoImagePromptPack(){
  var placement=getPlacement(), shape=getPrimitiveShape();
  var mockScope=v('decorationScope')||'all';
  var tokenContract='[01 DESIGN TOKEN CONTRACT — TEXT ONLY, DO NOT GENERATE AN IMAGE]\n'+
@@ -751,8 +760,72 @@ function buildPromptPack(){
   styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+
   'SILENT PRE-FLIGHT: verify [03] element inventory and placement; [02] component match; [01] tokens and decoration scope; frameless side feature illustrations; full-screen background; and clean screen-only output. Fix violations before generating and do not print this check.\n\n'+
   'Section Negative Prompt: '+packNeg+', extra UI not present in [03], annotations, callout lines, measurements, legends, specification tables, explanatory footer, presentation board, device frame, white outer margin, no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
- return promptPackHeader()+tokenContract+'\n\n---\n\n'+componentSheet+'\n\n---\n\n'+structureContract+'\n\n---\n\n'+finalMockup;
+ return twoImagePromptPackHeader()+tokenContract+'\n\n---\n\n'+componentSheet+'\n\n---\n\n'+structureContract+'\n\n---\n\n'+finalMockup;
 }
+function promptPackTokenContract(){return '[01 DESIGN TOKEN CONTRACT — TEXT ONLY]\n'+
+ 'Use this exact visual specification. It controls component appearance, never screen layout.\n\n'+
+ genreText()+motifText()+commonContext()+'\n\n'+decorationGuide()+'\n\n'+
+ 'Global Negative Prompt: '+negativeText()+extraText();
+}
+function promptPackExactInventory(){
+ var w=v('wireframe').toUpperCase(), lines=[];
+ if(w.indexOf('COIN 12,450')>=0&&w.indexOf('GEM 320')>=0&&w.indexOf('ENERGY 76/100')>=0) lines.push('- Top resources: exactly COIN 12,450 +; GEM 320 +; ENERGY 76/100 +. Preserve these labels and values.');
+ if(w.indexOf('SETTING')>=0) lines.push('- Exactly 1 SETTING icon control in the top area; do not rename it MENU.');
+ if(w.indexOf('[AVATAR]')>=0&&w.indexOf('LV64')>=0&&w.indexOf('65%')>=0) lines.push('- Exactly 1 profile row containing AVATAR, Lv64, and EXP 65%. Preserve these values.');
+ if(w.indexOf('FEATURED CHARACTER')>=0) lines.push('- Exactly 1 featured character, mandatory and fully visible in the open vertical center safe zone. No UI may overlap the character.');
+ if(['NEWS','LOGIN BONUS','FRIENDS','MAILBOX','GUILD','RANKING'].every(function(x){return w.indexOf(x)>=0})){
+  lines.push('- Exactly 6 frameless SIDE FEATURE ILLUSTRATIONS: left column NEWS, FRIENDS, GUILD; right column LOGIN BONUS, MAILBOX, RANKING.');
+  lines.push('- Each side illustration sits directly on the world art with no frame, plate, square, card, or button background. Put its exact caption below on a small semi-transparent pill.');
+ }
+ if(w.indexOf('[     PLAY     ]')>=0||w.indexOf('[PLAY]')>=0) lines.push('- Exactly 1 large PLAY Primary Button centered above the bottom navigation. The word PLAY must remain unchanged.');
+ if(['CHARA','QUEST','HOME','SHOP','MENU'].every(function(x){return w.indexOf(x)>=0})) lines.push('- Bottom navigation: exactly 5 items in this left-to-right order: CHARA, QUEST, HOME, SHOP, MENU. Do not rename, reorder, or substitute them.');
+ if(!lines.length) lines.push('- Derive an exact count and placement for every element from the mandatory ASCII wireframe below. Preserve all labels verbatim.');
+ lines.push('- No other UI elements. Specifically no mission panel, event panel, login-bonus panel, campaign banner, battle button, upgrade button, reward card, promotional card, or extra action row unless explicitly present in the ASCII wireframe.');
+ return 'EXACT ELEMENT INVENTORY — verify every line before generating:\n'+lines.join('\n');
+}
+function promptPackPlainFrameRule(){
+ var scope=v('decorationScope')||'all';
+ if(getPlacement()==='None'||scope==='all') return '';
+ var allowed=scope==='buttons'?'buttons only':'buttons and panels only';
+ return 'DECORATION / FRAME SCOPE OVERRIDE: Edge Modifier '+v('edgeModifier')+' and Frame Modifier '+v('frameModifier')+' may express the decorative primitive on '+allowed+'. Every component outside that scope uses one continuous plain frame: no notches, cutouts, split segments, stepped corners, ornamental gaps, or decorative corner structures. General shape language does not override this scope.';
+}
+function buildPromptPackComponentStep(){return 'GENERATE ONE IMAGE NOW: COMPONENT SHEET ONLY.\n'+
+ 'Do not generate a screen mockup. This is a standalone text-to-image request.\n\n'+
+ promptPackTokenContract()+'\n\n---\n\n'+promptPackExactInventory()+'\n\n'+promptPackPlainFrameRule()+'\n\n'+
+ '[02 COMPONENT SHEET]\n'+
+ 'Create a clean component reference sheet on a plain neutral studio background. Show ONLY reusable UI component types needed by the exact inventory; omit unused library components and do not design the screen layout.\n'+
+ 'Show one large NORMAL example per component type. For interactive components, add compact Pressed and Disabled examples only. Use concise labels; no explanatory paragraphs, character, world art, device mockup, or decorative background.\n'+
+ 'Include: resource/currency control, SETTING Icon Button, avatar-level-EXP profile strip, EXP bar, PLAY Primary Button, bottom navigation item, and caption pill when they occur in the inventory. Side Feature Illustrations and the featured character are illustration-layer assets, not reusable UI components; do not place them on this sheet.\n'+
+ 'This image will be the component-appearance reference for the Final Mockup. Do not invent screen layout.';
+}
+function buildPromptPackFinalStep(){
+ var placement=getPlacement(), mockScope=v('decorationScope')||'all';
+ var packNeg='no floating decorations, no sticker-like ornaments pasted over frames';
+ if(placement==='Top Center') packNeg+=', no corner ornaments, no corner brackets, no gold corner borders';
+ if(placement==='Corner') packNeg+=', no top center decorations, no centered top ornaments';
+ if(placement==='None') packNeg+=', no ornaments, no decorative borders';
+ if(placement!=='None'&&mockScope==='buttons') packNeg+=', no decoration on panels, tabs, badges, icon frames, currency bars, profile strips, progress bars, caption pills, lists, or navigation';
+ var w=v('wireframe').toLowerCase();
+ var secondary=w.indexOf('exp')>=0
+  ? 'Use Secondary '+el('cSecondary2').value+' for the EXP fill. Do not add another element merely to display Secondary.'
+  : 'Do not add an element merely to display Secondary '+el('cSecondary2').value+'.';
+ return 'GENERATE ONE IMAGE NOW: FINAL SCREEN MOCKUP ONLY.\n'+
+  'This is a new standalone instruction sent after the Component Sheet. Use the previously generated Component Sheet ONLY as the visual reference for reusable component appearance. It does NOT define layout or element inventory.\n\n'+
+  'ABSOLUTE PRIORITY: the exact inventory and mandatory ASCII wireframe below control the screen. If they conflict with common game-UI conventions, aesthetic improvisation, or the Component Sheet, follow the inventory and wireframe.\n\n'+
+  promptPackExactInventory()+'\n\n'+
+  '[03 MANDATORY STRUCTURAL CONTRACT]\n'+
+  'The world key visual fills the complete canvas edge to edge, top to bottom, continuously behind every UI element. Never put it inside a panel, card, window, or framed region.\n'+
+  'Preserve every element, label, value, group, layer, left/right position, and top-to-bottom order below. Add nothing, omit nothing, merge nothing, and rename nothing.\n\n'+v('wireframe')+'\n\n'+
+  'SIDE FEATURE ILLUSTRATIONS ARE NOT BUTTONS: show all six at the left/right edges exactly as specified. No frame, plate, square, card, or button background. Use rim light, shadow, outline, or local contrast for separation, plus a small semi-transparent caption pill below.\n\n'+
+  promptPackTokenContract()+'\n\n'+promptPackPlainFrameRule()+'\n'+secondary+'\n\n'+
+  'Reuse the prior Component Sheet without redesign: identical UI types retain the same silhouette, proportions, fill, frame, material, stroke, shadow, and allowed decoration.\n'+
+  'LIMITED FREEDOM: refine only relative size, spacing, alignment, and breathing room. Never use that freedom to change the inventory or structure.\n\n'+
+  styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+
+  'OUTPUT: one clean, finished '+v('screenType')+' game screen only. No title, annotation, callout, measurement, legend, swatch, specification table, explanatory footer, device frame, white margin, or presentation board.\n'+
+  'SILENT PRE-FLIGHT: count every required element; confirm the featured character, all 6 frameless side illustrations, PLAY, and the exact 5 navigation labels; remove every forbidden extra; then generate without printing this checklist.\n\n'+
+  'Negative Prompt: '+packNeg+', mission panel, event panel, login-bonus panel, campaign banner, battle button, upgrade button, reward card, promotional card, extra action row, extra UI, missing character, framed side icons, annotations, presentation board, device frame, white outer margin, full-screen color grading, sepia, monochromatic cast';
+}
+function buildPromptPack(){return v('promptPackStep')==='final'?buildPromptPackFinalStep():buildPromptPackComponentStep();}
 function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
  el('output').value=r; el('status').textContent='プロンプトを生成しました。'; checkConflicts();
