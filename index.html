@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.54</h1>
+<h1>ゲームUIプロンプト生成ツール v1.55</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -574,7 +574,8 @@ function styleThesisText(){
  if(parts2.length) bits.push('— '+parts2.join('; '));
  if(placement!=='None'&&shape){
   var t=PRIMITIVE_TRIPLE[shape];
-  bits.push('. Every decorated button carries a small '+shape+' ornament at the '+placement.toLowerCase()+' position'+(t?(', '+t.analogy):''));
+  var level=v('decoration').split(' / ')[0].toLowerCase();
+  bits.push('. Every decorated button carries a '+level+' '+shape+' ornament at the '+placement.toLowerCase()+' position'+(t?(', '+t.analogy):''));
  }
  bits.push('. The UI is colored strictly in '+el('cPrimary').value+' (primary), '+el('cSecondary2').value+' (secondary) and '+el('cBackground').value+' (background), floating over a freely-colored painted world illustration');
  bits.push('. '+v('mood')+' mood, '+v('era')+' era.');
@@ -621,14 +622,14 @@ function buildScreenMockupPrompt(){
  if(placement!=='None' && mockScope==='buttonsPanels') placementNeg+=', no decoration on tabs, badges, icon frames, currency bars, lists, or navigation';
  return styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+mockupDecorationBlock(placement,shape,mockScope)+'\n\n'+componentManifestText(placement,shape,mockScope)+'\n\n'+secondaryJobText()+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\n\nThis is a pure TEXT-TO-IMAGE task: create one brand-new image from the written specification below. No reference image is attached or required.\nThe screen is assembled from one consistent reusable component kit defined by this specification. Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nUse this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\nDESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room, resize and reproportion elements, and space out tightly stacked rows. Keep the element inventory and vertical order; sizes, gaps, and visual rhythm are yours to design for a relaxed, premium feel. This freedom applies to LAYOUT ONLY — never to the UI layer\'s colors, shapes, or decoration.\n\n'+layoutSpacingText()+'\n\n'+consistency+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter, '+negativeText()+extraText();
 }
-function promptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
+function legacyPromptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
  'Generate EXACTLY ONE image per response. This sequence has THREE generated images: [01], [02], then [04]. Section [03] is a text-only STRUCTURAL CONTRACT used to build [04]; never generate an image for [03]. For this first response, generate section [01] only.\n'+
  'Each section is its own independent, full-size image — NOT a 2x2 grid, collage, contact sheet, or composite. Never merge multiple sections onto one canvas.\n'+
  'Build the images in order. All three generated images depict ONE single design system. Treat the already-generated [01] and [02] images in this conversation as visual continuity references for later images: preserve their exact colors, component geometry, material, stroke, shadow, and decoration decisions.\n\n'+
  'CONTINUATION RULE: When the user replies "continue", generate EXACTLY ONE image for the next deliverable only. Advance [01] -> [02] -> [04]. Never generate [03], never repeat a completed deliverable, and never generate more than one image in a response. After [04], state that the sequence is complete instead of generating another image.\n\n=== START OF SEQUENCE (generate section [01] only now) ===\n\n';
 }
-function buildPromptPack(){
+function legacyBuildPromptPack(){
  var placement=getPlacement(), shape=getPrimitiveShape();
  var mockScope=v('decorationScope')||'all';
  var globalSpec='=== GLOBAL DESIGN SPEC — applies to EVERY section below. Written once here; every image must follow it. ===\n\n'+
@@ -698,7 +699,59 @@ function buildPromptPack(){
   '4. The output is a clean game screen only, with no presentation-board content.\n'+
   '5. Decoration scope and secondary-color jobs are satisfied.\n\n'+
   'Section Negative Prompt: '+packNeg+', extra UI not present in the structural contract, annotations, callout lines, measurements, legends, specification tables, explanatory footer, presentation board, device frame, white outer margin, no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
- return promptPackHeader()+globalSpec+s01+'\n\n---\n\n'+s02+'\n\n---\n\n'+s03+'\n\n---\n\n'+s04;
+ return legacyPromptPackHeader()+globalSpec+s01+'\n\n---\n\n'+s02+'\n\n---\n\n'+s03+'\n\n---\n\n'+s04;
+}
+function promptPackHeader(){return 'IMPORTANT — TWO-IMAGE GENERATION SEQUENCE:\n'+
+ 'This is a pure TEXT-TO-IMAGE task. Generate EXACTLY ONE full-size image per response, never a collage or composite.\n'+
+ 'There are two image deliverables: [02] COMPONENT SHEET, then [04] FINAL SCREEN MOCKUP. [01] and [03] are text-only contracts; never generate images for them.\n'+
+ 'NOW: generate [02] only. Do not generate [04] yet.\n'+
+ 'WHEN THE USER REPLIES "continue": generate [04] only, using the already-generated [02] image in this conversation as the visual source of truth. Preserve its component geometry, colors, material, stroke, shadow, and decoration.\n'+
+ 'After [04], the sequence is complete. Never repeat a deliverable or generate more than one image per response.\n\n';
+}
+function buildPromptPack(){
+ var placement=getPlacement(), shape=getPrimitiveShape();
+ var mockScope=v('decorationScope')||'all';
+ var tokenContract='[01 DESIGN TOKEN CONTRACT — TEXT ONLY, DO NOT GENERATE AN IMAGE]\n'+
+  'This is the immutable visual specification for both generated images.\n\n'+
+  genreText()+motifText()+commonContext()+'\n\n'+decorationGuide()+'\n\n'+
+  'Global Negative Prompt: '+negativeText()+extraText();
+ var componentSheet='[02 COMPONENT SHEET — FIRST IMAGE DELIVERABLE]\n'+
+  'Create a clean component reference sheet on a plain neutral studio background. Read [03] first and show ONLY reusable UI component types that actually appear in [03]; omit unused library components.\n'+
+  'Show one large, clear NORMAL example of every required component. For interactive components only, add a compact secondary row with Pressed and Disabled states. Do not create Selected, Locked, or Notification state samples unless [03] explicitly requires them.\n'+
+  'Use concise type/state labels only. No explanatory paragraphs, character, world art, phone mockup, or decorative background.\n'+
+  'All examples must follow [01]. Components outside the selected decoration scope remain completely plain. Do not apply a decorative primitive merely to express the general shape language or frame modifier.\n'+
+  'This image becomes the immutable visual source of truth for [04].';
+ var structureContract='[03 STRUCTURAL CONTRACT — TEXT ONLY, DO NOT GENERATE AN IMAGE]\n'+
+  'Screen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nPlatform: '+v('platform')+'\n\n'+
+  'The ASCII wireframe and its written instructions define the complete element inventory, grouping, layer, left/right placement, and top-to-bottom order for [04].\n'+
+  'Include every specified element exactly once. Do not add, remove, replace, merge, or repurpose elements. Text instructions override generic component assumptions. Only relative dimensions, spacing, and breathing room may be refined.\n\n'+
+  'MANDATORY ASCII WIREFRAME AND INSTRUCTIONS:\n'+v('wireframe')+'\n\n'+
+  'TERMINOLOGY OVERRIDE: Any item described as a frameless side icon is a SIDE FEATURE ILLUSTRATION, not a button and not an Icon Button. It must have no frame, plate, or background shape.';
+ var packNeg='no floating decorations, no sticker-like ornaments pasted over frames';
+ if(placement==='Top Center') packNeg+=', no corner ornaments, no corner brackets, no gold corner borders';
+ if(placement==='Corner') packNeg+=', no top center decorations, no centered top ornaments';
+ if(placement==='None') packNeg+=', no ornaments, no decorative borders';
+ if(placement!=='None' && mockScope==='buttons') packNeg+=', no decoration on panels, popups, tabs, badges, icon frames, lists, or navigation';
+ if(placement!=='None' && mockScope==='buttonsPanels') packNeg+=', no decoration on tabs, badges, icon frames, lists, or navigation';
+ var wireframeLower=v('wireframe').toLowerCase();
+ var secondaryUsage=[];
+ if(wireframeLower.indexOf('exp')>=0||wireframeLower.indexOf('progress')>=0) secondaryUsage.push('the EXP / progress fill');
+ if(wireframeLower.indexOf('tab')>=0) secondaryUsage.push('the active tab highlight');
+ if(wireframeLower.indexOf('secondary')>=0) secondaryUsage.push('the Secondary Button fill');
+ var secondaryContract=secondaryUsage.length
+  ? 'Use Secondary '+el('cSecondary2').value+' for '+secondaryUsage.join(' and ')+'. Do not add any element solely to create another Secondary-color usage.'
+  : 'Do not add an element solely to display Secondary '+el('cSecondary2').value+'. Use it only if an element in [03] explicitly calls for a secondary or selected state.';
+ var finalMockup='[04 SCREEN MOCKUP — SECOND AND FINAL IMAGE DELIVERABLE]\n'+
+  'This is the primary deliverable. Create ONE finished, production-quality '+v('screenType')+' game screen — not a design document. Output the screen artwork only: no title, annotations, callout lines, measurements, legends, swatches, specification tables, explanatory footer, device frame, or white outer margin.\n\n'+
+  'PRIORITY ORDER: (1) [03] structure and special instructions, (2) the generated [02] component appearance, (3) [01] tokens, (4) the style thesis below. Higher priority always wins.\n'+
+  'Apply [03] exactly once as written above. Include every specified element exactly once. Preserve its grouping, layer, left/right placement, and top-to-bottom order. Add nothing and omit nothing.\n'+
+  'Reuse the generated [02] components without redesign. Identical component types must keep identical silhouettes, proportions, fill, frame, material, stroke, shadow, and decoration. Solid buttons remain solid; composite components remain intact.\n'+
+  secondaryContract+'\n'+
+  'LIMITED FREEDOM: refine only relative size, spacing, alignment, and visual rhythm. Treat [01] pixel values as the visual proportions established by [02], not as a reason to add measurements or annotations. Maintain a consistent safe-area inset and visible separation without deleting required elements.\n\n'+
+  styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+
+  'SILENT PRE-FLIGHT: verify [03] element inventory and placement; [02] component match; [01] tokens and decoration scope; frameless side feature illustrations; full-screen background; and clean screen-only output. Fix violations before generating and do not print this check.\n\n'+
+  'Section Negative Prompt: '+packNeg+', extra UI not present in [03], annotations, callout lines, measurements, legends, specification tables, explanatory footer, presentation board, device frame, white outer margin, no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter';
+ return promptPackHeader()+tokenContract+'\n\n---\n\n'+componentSheet+'\n\n---\n\n'+structureContract+'\n\n---\n\n'+finalMockup;
 }
 function generatePrompt(){
  var r=''; if(currentMode==='designSystem')r=buildDesignSystemPrompt(); if(currentMode==='componentSheet')r=buildComponentSheetPrompt(); if(currentMode==='screenMockup')r=buildScreenMockupPrompt(); if(currentMode==='promptPack')r=buildPromptPack();
