@@ -38,7 +38,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.57</h1>
+<h1>ゲームUIプロンプト生成ツール v1.58</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -798,6 +798,14 @@ function buildPromptPackComponentStep(){return 'GENERATE ONE IMAGE NOW: COMPONEN
  'Include: resource/currency control, SETTING Icon Button, avatar-level-EXP profile strip, EXP bar, PLAY Primary Button, bottom navigation item, and caption pill when they occur in the inventory. Side Feature Illustrations and the featured character are illustration-layer assets, not reusable UI components; do not place them on this sheet.\n'+
  'This image will be the component-appearance reference for the Final Mockup. Do not invent screen layout.';
 }
+function promptPackStyleCompatibilityGate(){
+ var primary=el('cPrimary').value, secondary=el('cSecondary2').value, background=el('cBackground').value;
+ var required='REQUIRED CURRENT STYLE: Genre '+(v('gameGenre')||'not specified')+'; Visual Style '+v('style')+'; Philosophy '+v('philosophy')+'; Material '+v('material')+'; Shape '+v('shape')+'; Lighting '+v('lighting')+'; Era '+v('era')+'; Mood '+v('mood')+'; UI palette '+primary+' / '+secondary+' / '+background+'.';
+ var gate='STYLE COMPATIBILITY GATE (mandatory): [01] below is the absolute source of truth for style, genre, world, colors, material, lighting, shape language, mood, and era. The prior Component Sheet may be reused ONLY for component type, silhouette, proportions, and internal structure, and only where it is compatible with [01]. Never inherit incompatible colors, material, lighting, mood, genre, world art, or visual style from the prior image.\n'+required;
+ var nonSciFi=v('gameGenre')!=='SciFi'&&v('style')!=='SF HUD'&&v('era')!=='Far Future'&&v('mood')!=='Sci-Fi';
+ if(nonSciFi) gate+='\nNON-SF LOCK: This design is not science fiction. If the prior Component Sheet or conversation contains SF HUD, cyberpunk, futuristic-city, holographic, powered-armor, robotic, or cyan/purple-neon styling, treat it as incompatible context and ignore it completely. Do not carry any of those traits into this image.';
+ return gate;
+}
 function buildPromptPackFinalStep(){
  var placement=getPlacement(), mockScope=v('decorationScope')||'all';
  var packNeg='no floating decorations, no sticker-like ornaments pasted over frames';
@@ -809,16 +817,19 @@ function buildPromptPackFinalStep(){
  var secondary=w.indexOf('exp')>=0
   ? 'Use Secondary '+el('cSecondary2').value+' for the EXP fill. Do not add another element merely to display Secondary.'
   : 'Do not add an element merely to display Secondary '+el('cSecondary2').value+'.';
+ var nonSciFi=v('gameGenre')!=='SciFi'&&v('style')!=='SF HUD'&&v('era')!=='Far Future'&&v('mood')!=='Sci-Fi';
+ if(nonSciFi) packNeg+=', no SF HUD, no cyberpunk, no futuristic city, no holographic UI, no powered armor, no robots, no cyan-purple neon palette, no science-fiction character or environment';
  return 'GENERATE ONE IMAGE NOW: FINAL SCREEN MOCKUP ONLY.\n'+
-  'This is a new standalone instruction sent after the Component Sheet. Use the previously generated Component Sheet ONLY as the visual reference for reusable component appearance. It does NOT define layout or element inventory.\n\n'+
-  'ABSOLUTE PRIORITY: the exact inventory and mandatory ASCII wireframe below control the screen. If they conflict with common game-UI conventions, aesthetic improvisation, or the Component Sheet, follow the inventory and wireframe.\n\n'+
+  'This is a new standalone instruction sent after the Component Sheet. The prior Component Sheet is a conditional geometry reference only. It never overrides the current style contract and does not define layout or element inventory.\n\n'+
+  'ABSOLUTE PRIORITY: (1) exact inventory and mandatory ASCII structure, (2) CURRENT [01] design tokens and world/style identity, (3) compatible component geometry from the prior Component Sheet. If they conflict, the higher-priority current instruction wins.\n\n'+
+  promptPackStyleCompatibilityGate()+'\n\n'+
   promptPackExactInventory()+'\n\n'+
   '[03 MANDATORY STRUCTURAL CONTRACT]\n'+
   'The world key visual fills the complete canvas edge to edge, top to bottom, continuously behind every UI element. Never put it inside a panel, card, window, or framed region.\n'+
   'Preserve every element, label, value, group, layer, left/right position, and top-to-bottom order below. Add nothing, omit nothing, merge nothing, and rename nothing.\n\n'+v('wireframe')+'\n\n'+
   'SIDE FEATURE ILLUSTRATIONS ARE NOT BUTTONS: show all six at the left/right edges exactly as specified. Set every illustration-and-caption cluster to an explicit 0.8× scale relative to the normal/default side-feature size. Keep the three positions in each column, but use the freed space as open world art around the character. No frame, plate, square, card, or button background. Use rim light, shadow, outline, or local contrast for separation, plus a proportionally scaled small semi-transparent caption pill below.\n\n'+
   promptPackTokenContract()+'\n\n'+promptPackPlainFrameRule()+'\n'+secondary+'\n\n'+
-  'Reuse the prior Component Sheet without redesign: identical UI types retain the same silhouette, proportions, fill, frame, material, stroke, shadow, and allowed decoration.\n'+
+  'COMPONENT REFERENCE LIMIT: from the prior Component Sheet, reuse only compatible component silhouettes, proportions, and internal structure. Rebuild fill, color, material, lighting, frame treatment, stroke, shadow, and decoration from the CURRENT [01] contract below. If the prior image visually conflicts with [01], ignore it rather than blending the two styles.\n'+
   'LIMITED FREEDOM: refine only relative size, spacing, alignment, and breathing room. Never use that freedom to change the inventory or structure.\n\n'+
   styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+
   'OUTPUT: one clean, finished '+v('screenType')+' game screen only. No title, annotation, callout, measurement, legend, swatch, specification table, explanatory footer, device frame, white margin, or presentation board.\n'+
