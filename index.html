@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.60</title>
+<title>ゲームUIプロンプト生成ツール v1.61</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -40,7 +40,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.60</h1>
+<h1>ゲームUIプロンプト生成ツール v1.61</h1>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -241,7 +241,7 @@ function updateModifierPreview(){
  var form=v('formModifier'), edge=v('edgeModifier'), frame=v('frameModifier');
  el('modifierPreview').textContent='Form: '+form+' / Edge: '+edge+' / Frame: '+frame+'\n'+modifierRuleText();
 }
-function modifierRuleText(){return 'Apply modifiers consistently to buttons, panels, tabs, badges, icon frames, and list items. Do not change the component family shape per rarity or state.'}
+function modifierRuleText(){return 'Apply the selected form consistently across the component family.\nApply edge and frame modifiers only where permitted by the Decoration Scope.\nComponents outside that scope must retain a plain continuous frame.\nDo not change the component family silhouette by rarity or state.'}
 
 var PRESETS={
  'Chunky Soft v1.0':{radius:20,stroke:3,shadowY:6,shadowBlur:12,buttonHeight:72,panelPadding:24,iconSize:48,gridUnit:8},
