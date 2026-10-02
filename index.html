@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.63</title>
+<title>ゲームUIプロンプト生成ツール v1.64</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -40,7 +40,14 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.63</h1>
+<h1>ゲームUIプロンプト生成ツール v1.64</h1>
+<div style="max-width:420px;margin:8px 0 14px">
+  <label>表示言語</label>
+  <div class="language-toggle" role="tablist" aria-label="Display language">
+    <button type="button" class="language-btn active" id="display_lang_ja" role="tab" aria-selected="true" onclick="setInterfaceLanguage('ja')">日本語</button>
+    <button type="button" class="language-btn" id="display_lang_en" role="tab" aria-selected="false" onclick="setInterfaceLanguage('en')">English</button>
+  </div>
+</div>
 <p class="desc">Style / Culture / Motif / System を分離し、Output Modeごとに必要な項目だけを参照します。</p>
 
 <div class="card">
@@ -206,7 +213,7 @@ function buildChips(containerId, items, defaults, klass, dataName){
   var chip=document.createElement('label');
   var on=!!(defaults&&defaults[name]);
   chip.className='part-chip '+(klass||'')+(on?' active':'');
-  chip.innerHTML='<input type="checkbox" '+(on?'checked':'')+' data-'+dataName+'="'+name+'"><span>'+name+'</span>';
+  chip.innerHTML='<input type="checkbox" '+(on?'checked':'')+' data-'+dataName+'="'+name+'"><span data-ui-choice="'+name+'">'+interfaceChoiceText(name)+'</span>';
   chip.querySelector('input').addEventListener('change',function(){this.closest('label').classList.toggle('active',this.checked)});
   list.appendChild(chip);
  });
@@ -1240,38 +1247,160 @@ function bindModeButtons(){
  });
 }
 
-function localizeInterfaceLabels(){
- var translations={
-  'Genre':'ジャンル','Platform':'プラットフォーム','Visual Style':'ビジュアルスタイル',
-  'Design Philosophy':'デザイン方針','Material':'素材','Shape Language':'形状言語',
-  'Lighting':'ライティング','Animation Feel':'アニメーションの感触',
-  'Culture / Region':'文化・地域','Era / Reference':'時代・参照年代','Mood':'雰囲気',
-  'Color System':'カラーシステム','Primary':'プライマリー','Secondary':'セカンダリー',
-  'Background':'背景色','Accent':'アクセント','Danger':'危険色',
-  'Decoration Rule':'装飾ルール','Motif Source':'モチーフの参照元',
-  'Decoration Level':'装飾レベル','Decoration Scope':'装飾の適用範囲',
-  'Form Modifier':'形状の量感','Edge Modifier':'エッジ形状','Frame Modifier':'フレーム構造',
-  'System Rule Mode':'システムルール設定','Preset':'プリセット',
-  'Corner Radius':'角丸半径','Stroke Width':'線の太さ','Shadow Offset Y':'影のY方向オフセット',
-  'Shadow Blur':'影のぼかし','Button Height':'ボタンの高さ','Panel Padding':'パネル内側余白',
-  'Icon Size':'アイコンサイズ','Grid Unit':'グリッド単位','Component Gap':'コンポーネント間隔',
-  'Screen Type':'画面タイプ','Layout Priority':'レイアウト優先度','Safe Area':'セーフエリア',
-  'Wireframe Template':'ワイヤーフレームテンプレート'
- };
- document.querySelectorAll('label').forEach(function(label){
-  var textNode=Array.from(label.childNodes).find(function(node){return node.nodeType===Node.TEXT_NODE&&node.nodeValue.trim()});
-  if(!textNode)return;
-  var english=textNode.nodeValue.trim(), japanese=translations[english];
-  if(japanese)textNode.nodeValue=english+' / '+japanese;
- });
- document.querySelectorAll('.lock').forEach(function(lock){
-  Array.from(lock.childNodes).forEach(function(node){
-   if(node.nodeType===Node.TEXT_NODE&&node.nodeValue.trim()==='Lock')node.nodeValue='固定';
-  });
+var interfaceLanguage='ja';
+var UI_TEXTS={
+ 'ゲームUIプロンプト生成ツール v1.64':{en:'Game UI Prompt Generator v1.64',ja:'ゲームUIプロンプト生成ツール v1.64'},
+ '表示言語':{en:'Display Language',ja:'表示言語'},
+ '1. OUTPUT MODE / 出力モード':{en:'1. OUTPUT MODE',ja:'1. 出力モード'},
+ 'GAME GENRE / ゲームジャンル':{en:'GAME GENRE',ja:'ゲームジャンル'},
+ '2. STYLE / スタイル':{en:'2. STYLE',ja:'2. スタイル'},
+ '3. WORLD SOURCE / 世界観の参照元':{en:'3. WORLD SOURCE',ja:'3. 世界観の参照元'},
+ '4. VISUAL SYSTEM / ビジュアルシステム':{en:'4. VISUAL SYSTEM',ja:'4. ビジュアルシステム'},
+ '5. SHAPE MODIFIER / 形状調整':{en:'5. SHAPE MODIFIER',ja:'5. 形状調整'},
+ '6. SYSTEM RULES / システムルール':{en:'6. SYSTEM RULES',ja:'6. システムルール'},
+ '7. COMPONENT SELECTOR / コンポーネント選択':{en:'7. COMPONENT SELECTOR',ja:'7. コンポーネント選択'},
+ 'UX GOAL / UX目標':{en:'UX GOAL',ja:'UX目標'},
+ '8. SCREEN SETTINGS / 画面設定':{en:'8. SCREEN SETTINGS',ja:'8. 画面設定'},
+ '9. NEGATIVE PROMPT BUILDER / ネガティブプロンプト':{en:'9. NEGATIVE PROMPT BUILDER',ja:'9. ネガティブプロンプト'},
+ '10. ADDITIONAL INSTRUCTIONS / 追加指示':{en:'10. ADDITIONAL INSTRUCTIONS',ja:'10. 追加指示'},
+ 'Prompt Pack Step / プロンプトパックの手順':{en:'Prompt Pack Step',ja:'プロンプトパックの手順'},
+ 'Genre':{en:'Genre',ja:'ジャンル'},'Platform':{en:'Platform',ja:'プラットフォーム'},
+ 'Visual Style':{en:'Visual Style',ja:'ビジュアルスタイル'},'Design Philosophy':{en:'Design Philosophy',ja:'デザイン方針'},
+ 'Material':{en:'Material',ja:'素材'},'Shape Language':{en:'Shape Language',ja:'形状言語'},
+ 'Lighting':{en:'Lighting',ja:'ライティング'},'Animation Feel':{en:'Animation Feel',ja:'アニメーションの感触'},
+ 'Culture / Region':{en:'Culture / Region',ja:'文化・地域'},'Era / Reference':{en:'Era / Reference',ja:'時代・参照年代'},
+ 'Mood':{en:'Mood',ja:'雰囲気'},'Color System':{en:'Color System',ja:'カラーシステム'},
+ 'Primary':{en:'Primary',ja:'プライマリー'},'Secondary':{en:'Secondary',ja:'セカンダリー'},
+ 'Background':{en:'Background',ja:'背景色'},'Accent':{en:'Accent',ja:'アクセント'},'Danger':{en:'Danger',ja:'危険色'},
+ 'Decoration Rule':{en:'Decoration Rule',ja:'装飾ルール'},'Motif Source':{en:'Motif Source',ja:'モチーフの参照元'},
+ 'Decoration Level':{en:'Decoration Level',ja:'装飾レベル'},'Decoration Scope':{en:'Decoration Scope',ja:'装飾の適用範囲'},
+ 'Form Modifier':{en:'Form Modifier',ja:'形状の量感'},'Edge Modifier':{en:'Edge Modifier',ja:'エッジ形状'},
+ 'Frame Modifier':{en:'Frame Modifier',ja:'フレーム構造'},'System Rule Mode':{en:'System Rule Mode',ja:'システムルール設定'},
+ 'Preset':{en:'Preset',ja:'プリセット'},'Corner Radius':{en:'Corner Radius',ja:'角丸半径'},
+ 'Stroke Width':{en:'Stroke Width',ja:'線の太さ'},'Shadow Offset Y':{en:'Shadow Offset Y',ja:'影のY方向オフセット'},
+ 'Shadow Blur':{en:'Shadow Blur',ja:'影のぼかし'},'Button Height':{en:'Button Height',ja:'ボタンの高さ'},
+ 'Panel Padding':{en:'Panel Padding',ja:'パネル内側余白'},'Icon Size':{en:'Icon Size',ja:'アイコンサイズ'},
+ 'Grid Unit':{en:'Grid Unit',ja:'グリッド単位'},'Component Gap':{en:'Component Gap',ja:'コンポーネント間隔'},
+ 'Screen Type':{en:'Screen Type',ja:'画面タイプ'},'Layout Priority':{en:'Layout Priority',ja:'レイアウト優先度'},
+ 'Safe Area':{en:'Safe Area',ja:'セーフエリア'},'Wireframe Template':{en:'Wireframe Template',ja:'ワイヤーフレームテンプレート'},
+ 'ASCII Wireframe':{en:'ASCII Wireframe',ja:'ASCIIワイヤーフレーム'},
+ 'Culture Avoid Rules / 文化表現の除外ルール':{en:'Culture Avoid Rules',ja:'文化表現の除外ルール'},
+ 'Prompt Language / プロンプト言語':{en:'Prompt Language',ja:'生成プロンプトの言語'},
+ 'Generated Prompt / 生成プロンプト':{en:'Generated Prompt',ja:'生成プロンプト'},
+ 'Design System':{en:'Design System',ja:'デザインシステム'},'Component Sheet':{en:'Component Sheet',ja:'コンポーネントシート'},
+ 'Screen Mockup':{en:'Screen Mockup',ja:'画面モックアップ'},'Prompt Pack':{en:'Prompt Pack',ja:'プロンプトパック'},
+ 'テンプレート反映':{en:'Apply Template',ja:'テンプレート反映'},'プロンプト生成':{en:'Generate Prompt',ja:'プロンプト生成'},
+ 'コピー':{en:'Copy',ja:'コピー'},'全文選択':{en:'Select All',ja:'全文選択'},'推奨値へ戻す':{en:'Reset to Recommended',ja:'推奨値へ戻す'},
+ 'Lock':{en:'Lock',ja:'固定'}
+};
+
+var OPTION_TEXTS={
+ '-- 選択してください --':{en:'-- Select --',ja:'-- 選択してください --'},
+ 'スマホ縦持ち':{en:'Mobile Portrait',ja:'スマホ縦持ち'},'スマホ横持ち':{en:'Mobile Landscape',ja:'スマホ横持ち'},
+ 'Steam / PC':{en:'Steam / PC',ja:'Steam／PC'},'PS5':{en:'PS5',ja:'PS5'},'Nintendo Switch':{en:'Nintendo Switch',ja:'Nintendo Switch'},
+ '角丸':{en:'Rounded',ja:'角丸'},'太くて厚い':{en:'Thick and Heavy',ja:'太くて厚い'},'薄く軽い':{en:'Thin and Light',ja:'薄く軽い'},
+ 'シャープ':{en:'Sharp',ja:'シャープ'},'レイヤード':{en:'Layered',ja:'レイヤード'},
+ '柔らかい光沢':{en:'Soft Gloss',ja:'柔らかい光沢'},'フラット':{en:'Flat',ja:'フラット'},'マット':{en:'Matte',ja:'マット'},
+ '強い光沢':{en:'High Gloss',ja:'強い光沢'},'ネオン発光':{en:'Neon Glow',ja:'ネオン発光'},
+ 'Global / Generic':{en:'Global / Generic',ja:'グローバル／汎用'},
+ 'Ancient':{en:'Ancient',ja:'古代'},'Classical':{en:'Classical',ja:'古典期'},'Medieval':{en:'Medieval',ja:'中世'},
+ 'Early Modern':{en:'Early Modern',ja:'近世'},'Industrial':{en:'Industrial',ja:'産業時代'},'Victorian':{en:'Victorian',ja:'ヴィクトリア朝'},
+ 'Retro 1950s':{en:'Retro 1950s',ja:'1950年代レトロ'},'Retro 1980s':{en:'Retro 1980s',ja:'1980年代レトロ'},
+ 'Contemporary':{en:'Contemporary',ja:'現代'},'Near Future':{en:'Near Future',ja:'近未来'},'Far Future':{en:'Far Future',ja:'遠未来'},
+ 'Post Apocalyptic':{en:'Post Apocalyptic',ja:'ポストアポカリプス'},'Timeless':{en:'Timeless',ja:'時代不問'},
+ 'Playful':{en:'Playful',ja:'遊び心'},'Festival':{en:'Festival',ja:'祝祭感'},'Cute':{en:'Cute',ja:'かわいい'},'Warm':{en:'Warm',ja:'温かい'},
+ 'Cozy':{en:'Cozy',ja:'居心地がよい'},'Peaceful':{en:'Peaceful',ja:'穏やか'},'Elegant':{en:'Elegant',ja:'上品'},'Luxury':{en:'Luxury',ja:'高級感'},
+ 'Heroic':{en:'Heroic',ja:'英雄的'},'Adventure':{en:'Adventure',ja:'冒険'},'Mysterious':{en:'Mysterious',ja:'神秘的'},
+ 'Magical':{en:'Magical',ja:'魔法的'},'Dark':{en:'Dark',ja:'暗い'},'Horror':{en:'Horror',ja:'恐怖'},'Tense':{en:'Tense',ja:'緊張感'},
+ 'Competitive':{en:'Competitive',ja:'競争的'},'Chaotic':{en:'Chaotic',ja:'混沌'},'Sci-Fi':{en:'Sci-Fi',ja:'SF'},'Minimal':{en:'Minimal',ja:'ミニマル'},
+ 'None':{en:'None',ja:'なし'},'Rounded':{en:'Rounded',ja:'丸みのある形状'},'Chunky':{en:'Chunky',ja:'厚みのある形状'},
+ 'Inflated':{en:'Inflated',ja:'膨らんだ形状'},'Asymmetric':{en:'Asymmetric',ja:'非対称'},'Organic':{en:'Organic',ja:'有機的'},
+ 'Chamfer':{en:'Chamfer',ja:'面取り'},'Corner Cut':{en:'Corner Cut',ja:'角を斜めに切る'},'Notch':{en:'Notch',ja:'切り欠き'},
+ 'Scallop':{en:'Scallop',ja:'波形'},'Stepped':{en:'Stepped',ja:'段差'},'Layered':{en:'Layered',ja:'多層フレーム'},
+ 'Double Frame':{en:'Double Frame',ja:'二重フレーム'},'Floating Frame':{en:'Floating Frame',ja:'浮遊フレーム'},
+ 'Split Frame':{en:'Split Frame',ja:'分割フレーム'},'Bracket Frame':{en:'Bracket Frame',ja:'括弧型フレーム'},
+ 'Chunky Soft v1.0':{en:'Chunky Soft v1.0',ja:'厚み・ソフト v1.0'},'Rounded Standard v1.0':{en:'Rounded Standard v1.0',ja:'角丸・標準 v1.0'},
+ 'Sharp Minimal v1.0':{en:'Sharp Minimal v1.0',ja:'シャープ・最小 v1.0'},'Heavy Ornate v1.0':{en:'Heavy Ornate v1.0',ja:'重厚・装飾 v1.0'},
+ 'Bouncy Large v1.0':{en:'Bouncy Large v1.0',ja:'弾む・大型 v1.0'},'Flat Compact v1.0':{en:'Flat Compact v1.0',ja:'フラット・小型 v1.0'},
+ 'Tight / 詰める — 1× grid unit':{en:'Tight — 1× grid unit',ja:'詰める — グリッド1単位'},
+ 'Normal / 標準 — 2× grid unit':{en:'Normal — 2× grid unit',ja:'標準 — グリッド2単位'},
+ 'Spacious / ゆったり — 3× grid unit':{en:'Spacious — 3× grid unit',ja:'ゆったり — グリッド3単位'},
+ 'Airy / 広々 — 4× grid unit':{en:'Airy — 4× grid unit',ja:'広々 — グリッド4単位'},
+ 'Home':{en:'Home',ja:'ホーム'},'Character Select':{en:'Character Select',ja:'キャラクター選択'},'Shop':{en:'Shop',ja:'ショップ'},
+ 'Gacha':{en:'Gacha',ja:'ガチャ'},'Reward':{en:'Reward',ja:'報酬'},'Event':{en:'Event',ja:'イベント'},
+ 'Mission':{en:'Mission',ja:'ミッション'},'Inventory':{en:'Inventory',ja:'所持品'},
+ '1. Component Sheet Prompt':{en:'1. Component Sheet Prompt',ja:'1. コンポーネントシート用プロンプト'},
+ '2. Final Mockup Prompt':{en:'2. Final Mockup Prompt',ja:'2. 最終モックアップ用プロンプト'}
+};
+
+var CHOICE_TEXTS={
+ 'Primary Button':{en:'Primary Button',ja:'プライマリーボタン'},'Secondary Button':{en:'Secondary Button',ja:'セカンダリーボタン'},
+ 'Icon Button':{en:'Icon Button',ja:'アイコンボタン'},'Panel':{en:'Panel',ja:'パネル'},'Popup Window':{en:'Popup Window',ja:'ポップアップ'},
+ 'Tab':{en:'Tab',ja:'タブ'},'Currency UI':{en:'Currency UI',ja:'通貨UI'},'Badge':{en:'Badge',ja:'バッジ'},
+ 'Icon Frame':{en:'Icon Frame',ja:'アイコンフレーム'},'Reward Window':{en:'Reward Window',ja:'報酬ウィンドウ'},
+ 'Scroll List':{en:'Scroll List',ja:'スクロールリスト'},'Health Bar':{en:'Health Bar',ja:'体力バー'},
+ 'Progress Bar':{en:'Progress Bar',ja:'進捗バー'},'Toast / Alert':{en:'Toast / Alert',ja:'トースト／警告'},
+ 'Loading Spinner':{en:'Loading Spinner',ja:'読み込み表示'},'Tooltip':{en:'Tooltip',ja:'ツールチップ'},
+ 'Slider':{en:'Slider',ja:'スライダー'},'Toggle Switch':{en:'Toggle Switch',ja:'切替スイッチ'},
+ 'Input Field':{en:'Input Field',ja:'入力欄'},'Header Bar':{en:'Header Bar',ja:'ヘッダーバー'},
+ '達成感':{en:'Achievement',ja:'達成感'},'収集欲':{en:'Collection',ja:'収集欲'},'驚き':{en:'Surprise',ja:'驚き'},
+ '癒やし':{en:'Relaxation',ja:'癒やし'},'没入感':{en:'Immersion',ja:'没入感'},'高揚感':{en:'Excitement',ja:'高揚感'},
+ '緊張感':{en:'Tension',ja:'緊張感'},'爽快感':{en:'Exhilaration',ja:'爽快感'},'愛着':{en:'Attachment',ja:'愛着'},'競争心':{en:'Competition',ja:'競争心'},
+ 'no text':{en:'no text',ja:'文字なし'},'no labels':{en:'no labels',ja:'ラベルなし'},'no mascot':{en:'no mascot',ja:'マスコットなし'},
+ 'no character':{en:'no character',ja:'キャラクターなし'},'no phone mockup':{en:'no phone mockup',ja:'端末モックアップなし'},
+ 'no infographic':{en:'no infographic',ja:'インフォグラフィックなし'},'no table':{en:'no table',ja:'表なし'},
+ 'no decorative background':{en:'no decorative background',ja:'装飾背景なし'},'no excessive ornament':{en:'no excessive ornament',ja:'過剰な装飾なし'},
+ 'no full pattern fill':{en:'no full pattern fill',ja:'全面パターン塗りなし'},'no realistic material':{en:'no realistic material',ja:'写実素材なし'},
+ 'no metallic texture unless selected':{en:'no metallic texture unless selected',ja:'選択時以外は金属質感なし'},
+ 'no glass unless selected':{en:'no glass unless selected',ja:'選択時以外はガラスなし'}
+};
+
+function directTextNode(element){
+ return Array.from(element.childNodes).find(function(node){return node.nodeType===3&&node.nodeValue.trim()});
+}
+function interfaceChoiceText(key){return CHOICE_TEXTS[key]?CHOICE_TEXTS[key][interfaceLanguage]:key}
+function optionDisplayText(raw,language){
+ if(OPTION_TEXTS[raw])return OPTION_TEXTS[raw][language];
+ var paren=raw.match(/^(.*?)（(.*?)）$/);
+ if(paren)return language==='ja'?paren[2]:paren[1];
+ var split=raw.lastIndexOf(' / '), right=split>=0?raw.slice(split+3):'';
+ if(split>=0&&/[ぁ-んァ-ヶ一-龠]/.test(right))return language==='ja'?right:raw.slice(0,split);
+ return raw;
+}
+function prepareOptionTranslations(){
+ document.querySelectorAll('select option').forEach(function(option){
+  if(option.dataset.uiOption)return;
+  var raw=option.textContent.trim(), internal=option.value;
+  option.dataset.uiOption=raw;
+  option.value=internal;
  });
 }
+function setInterfaceLanguage(language){
+ interfaceLanguage=language==='en'?'en':'ja';
+ try{localStorage.setItem('uiGeneratorDisplayLanguage',interfaceLanguage)}catch(e){}
+ document.documentElement.lang=interfaceLanguage;
+ document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.64'][interfaceLanguage];
+ ['ja','en'].forEach(function(lang){
+  var button=el('display_lang_'+lang), active=lang===interfaceLanguage;
+  button.classList.toggle('active',active);button.setAttribute('aria-selected',active?'true':'false');
+ });
+ document.querySelectorAll('h1,.section-title,label,button,.lock').forEach(function(element){
+  var node=directTextNode(element);if(!node)return;
+  if(!element.dataset.uiTextKey)element.dataset.uiTextKey=node.nodeValue.trim();
+  var translated=UI_TEXTS[element.dataset.uiTextKey];
+  if(translated)node.nodeValue=translated[interfaceLanguage];
+ });
+ prepareOptionTranslations();
+ document.querySelectorAll('select option').forEach(function(option){option.textContent=optionDisplayText(option.dataset.uiOption,interfaceLanguage)});
+ document.querySelectorAll('[data-ui-choice]').forEach(function(span){span.textContent=interfaceChoiceText(span.dataset.uiChoice)});
+}
 
-function init(){localizeInterfaceLabels();bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,null,'neg-chip','neg');applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();applyColorPreset();setMode('designSystem');}
+function init(){
+ var saved='ja';try{saved=localStorage.getItem('uiGeneratorDisplayLanguage')||'ja'}catch(e){}
+ setInterfaceLanguage(saved);
+ bindModeButtons();buildChips('partsList',ALL_PARTS,DEFAULT_PARTS,'','part');buildChips('uxList',ALL_UX,null,'ux-chip','ux');buildChips('negList',ALL_NEG,null,'neg-chip','neg');
+ applyWireframeTemplate();updateHints();updateModifierPreview();toggleRulesMode();updateDecorationLevel();applyColorPreset();setMode('designSystem');
+}
 init();
 </script>
 </body>
