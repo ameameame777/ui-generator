@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.65</title>
+<title>ゲームUIプロンプト生成ツール v1.66</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -40,7 +40,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.65</h1>
+<h1>ゲームUIプロンプト生成ツール v1.66</h1>
 <div style="max-width:420px;margin:8px 0 14px">
   <label>表示言語</label>
   <div class="language-toggle" role="tablist" aria-label="Display language">
@@ -713,7 +713,7 @@ function buildScreenMockupPrompt(){
  neg+=', no cramped layout';
  var userNeg=negativeText(); if(userNeg) neg+=', '+userNeg;
 
- return 'TEXT-TO-IMAGE ONLY.\nGenerate one completely new image from scratch.\nThere is NO reference image, NO attached image, and NO image to edit.\nIgnore any previous images. Do not perform image editing, inpainting, variation, or style transfer.\n\n'+
+ return 'Draw a brand-new illustration of the mobile game screen described below.\n\n'+
   thesis+'\n\n'+twoLayer+'\n\n'+palette+'\n\n'+deco+'\n\n'+system+'\n\n'+screen+'\n\n'+spacing+'\n\n'+consistency2+'\n\nNegative Prompt: '+neg+extraText();
 }
 function legacyPromptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
@@ -1317,7 +1317,7 @@ function bindModeButtons(){
 
 var interfaceLanguage='ja';
 var UI_TEXTS={
- 'ゲームUIプロンプト生成ツール v1.65':{en:'Game UI Prompt Generator v1.65',ja:'ゲームUIプロンプト生成ツール v1.65'},
+ 'ゲームUIプロンプト生成ツール v1.66':{en:'Game UI Prompt Generator v1.66',ja:'ゲームUIプロンプト生成ツール v1.66'},
  '表示言語':{en:'Display Language',ja:'表示言語'},
  '1. OUTPUT MODE / 出力モード':{en:'1. OUTPUT MODE',ja:'1. 出力モード'},
  'GAME GENRE / ゲームジャンル':{en:'GAME GENRE',ja:'ゲームジャンル'},
@@ -1447,7 +1447,7 @@ function setInterfaceLanguage(language){
  interfaceLanguage=language==='en'?'en':'ja';
  try{localStorage.setItem('uiGeneratorDisplayLanguage',interfaceLanguage)}catch(e){}
  document.documentElement.lang=interfaceLanguage;
- document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.65'][interfaceLanguage];
+ document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.66'][interfaceLanguage];
  ['ja','en'].forEach(function(lang){
   var button=el('display_lang_'+lang), active=lang===interfaceLanguage;
   button.classList.toggle('active',active);button.setAttribute('aria-selected',active?'true':'false');
