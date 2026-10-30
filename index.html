@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.64</title>
+<title>ゲームUIプロンプト生成ツール v1.65</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -40,7 +40,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.64</h1>
+<h1>ゲームUIプロンプト生成ツール v1.65</h1>
 <div style="max-width:420px;margin:8px 0 14px">
   <label>表示言語</label>
   <div class="language-toggle" role="tablist" aria-label="Display language">
@@ -630,23 +630,91 @@ function secondaryJobText(){
  jobs=jobs.slice(0,3);
  return 'SECONDARY COLOR CONTRACT: the secondary color '+s+' has concrete jobs on this screen — it is used for: '+jobs.join('; ')+'. It must be clearly visible in at least '+Math.min(2,jobs.length)+' of these places. If none of these elements exist on the screen, the contract is waived.';
 }
+var PLATFORM_EN={'スマホ縦持ち':'vertical mobile portrait','スマホ横持ち':'horizontal mobile landscape'};
+var UX_EN={'達成感':'achievement','収集欲':'urge to collect','驚き':'surprise','癒やし':'relaxation','没入感':'immersion','高揚感':'excitement','緊張感':'tension','爽快感':'exhilaration','愛着':'attachment','競争心':'competitiveness'};
+function enLabel(s){return String(s||'').replace(/（.*?）/g,'').split(' / ')[0].trim();}
 function buildScreenMockupPrompt(){
- var placement=getPlacement();
- var shape=getPrimitiveShape();
- var mockScope=v('decorationScope')||'all';
- var consistency='CONSISTENCY (strictly enforce):\n'+
- '- Every instance of a component type is drawn ONE way across the screen — identical corner radius, stroke, shadow, material, highlight, colors, fill treatment, frame layering, decoration, and proportions. No per-instance variations.\n'+
- '- Primary Buttons (main CTA, GO, confirm) all use the SAME solid Primary fill — never converted into dark outline-only / hollow versions to fit the scene mood. Secondary Buttons all use the SAME solid Secondary fill, and the Secondary color must actually appear on the screen\'s sub buttons.\n'+
- '- Composite components (e.g. the combined Currency UI bar) keep one consistent internal structure — do not split or merge them.\n'+
- '- The final screen must look like it was assembled from one consistent UI kit.';
- var placementNeg='no floating decorations, no sticker-like ornaments pasted over frames';
- if(placement==='Top Center') placementNeg+=', no corner ornaments, no corner brackets, no diagonal corner decorations, no gold corner borders';
- if(placement==='Corner') placementNeg+=', no top center decorations, no centered top ornaments';
- if(placement==='None') placementNeg+=', no ornaments, no decorative borders, no corner decorations, no edge decorations';
- if(placement!=='None' && mockScope==='buttons') placementNeg+=', no decoration on panels, popups, tabs, badges, icon frames, currency bars, lists, or navigation';
- if(placement!=='None' && mockScope==='buttonsPanels') placementNeg+=', no decoration on tabs, badges, icon frames, currency bars, lists, or navigation';
- var t2iPreamble='TEXT-TO-IMAGE ONLY.\nGenerate one completely new image from scratch.\nThere is NO reference image, NO attached image, and NO image to edit.\nIgnore any previous images. Do not perform image editing, inpainting, variation, or style transfer.\n\n';
- return t2iPreamble+styleThesisText()+'\n\n'+twoLayerRuleText()+'\n\n'+mockupDecorationBlock(placement,shape,mockScope)+'\n\n'+componentManifestText(placement,shape,mockScope)+'\n\n'+secondaryJobText()+'\n\n---\n\nCreate a mobile game SCREEN MOCKUP using the selected reusable UI design system.\nThe screen is assembled from one consistent reusable component kit defined by this specification. Do not reinterpret, redesign, simplify, or invent component shapes per usage.\n\n'+genreText()+commonContext()+'\n\nScreen Type: '+v('screenType')+'\nLayout Priority: '+v('layoutPriority')+'\nSafe Area: '+v('safeArea')+'\nUX Goal: '+uxText()+'\n\nUse these components when appropriate:\n'+partsText()+'\n\nUse this ASCII wireframe as a STRUCTURAL GUIDE ONLY — it defines which elements exist, how they are grouped, and their top-to-bottom order. It does NOT define exact sizes, spacing, or density:\n'+v('wireframe')+'\n\nDESIGN FREEDOM: Do not reproduce the wireframe literally. As a professional game UI designer, prioritize visual comfort and polish — enlarge breathing room, resize and reproportion elements, and space out tightly stacked rows. Keep the element inventory and vertical order; sizes, gaps, and visual rhythm are yours to design for a relaxed, premium feel. This freedom applies to LAYOUT ONLY — never to the UI layer\'s colors, shapes, or decoration.\n\n'+layoutSpacingText()+'\n\n'+consistency+'\nNegative Prompt: '+placementNeg+', no cramped layout, no components touching screen edges, no elements touching each other, no full-screen color grading, no sepia tone, no monochromatic color cast, no global warm filter, '+negativeText()+extraText();
+ var placement=getPlacement(), shape=getPrimitiveShape(), scope=v('decorationScope')||'all';
+ var g=parseInt(v('gridUnit'))||8, mul={'tight':1,'normal':2,'spacious':3,'airy':4}[v('componentGap')]||2;
+ var gap=g*mul, edge=g*(mul+2);
+ var plat=PLATFORM_EN[v('platform')]||v('platform');
+ var genre=v('gameGenre');
+ var t=PRIMITIVE_TRIPLE[shape];
+ var level=v('decoration').split(' / ')[0].toLowerCase();
+ var pal={p:el('cPrimary').value,s:el('cSecondary2').value,bg:el('cBackground').value,a:el('cAccent').value,d:el('cDanger').value};
+ var parts=getParts();
+
+ var ui=[];
+ [MATERIAL_DESC[v('material')],SHAPE_DESC[v('shape')],FORM_DESC[v('formModifier')]].forEach(function(x){if(x)ui.push(x);});
+ if(EDGE_DESC[v('edgeModifier')]) ui.push('edges with '+EDGE_DESC[v('edgeModifier')]);
+ if(FRAME_DESC[v('frameModifier')]) ui.push('frames as '+FRAME_DESC[v('frameModifier')]);
+ if(LIGHTING_DESC[v('lighting')]) ui.push(LIGHTING_DESC[v('lighting')]);
+ var placePhrase={'Corner':'the 4 corners','Top Center':'the top-center edge','Mid Edge':'the edge midpoints'}[placement]||'';
+ var thesis='STYLE THESIS (defines the finished look; everything below refines it):\n'+
+  'A polished, production-quality '+(genre?genre+' ':'')+(PLATFORM_EN[v('platform')]?'mobile ':'')+'game '+v('screenType').toUpperCase()+' screen ('+plat+'), set in a world of '+v('mood').toLowerCase()+' mood and '+v('era').toLowerCase()+' era, inspired by '+enLabel(v('culture'))+' aesthetics, rendered in '+enLabel(v('style'))+' style ('+(STYLE_DESC[v('style')]||'')+') with '+enLabel(v('philosophy')).toLowerCase()+' sensibility. UI chrome: '+ui.join('; ')+'.'+
+  (placement!=='None'&&shape?' Decorated buttons carry a '+level+' '+shape+' ornament at '+placePhrase+(t?', '+t.analogy:'')+'.':'')+
+  ' The UI floats over a freely-colored, painted world illustration.';
+
+ var twoLayer='TWO-LAYER RULE (highest priority):\n'+
+  '1. ILLUSTRATION LAYER — background world art, characters, items, side illustrated icons: free, natural, varied colors (blue sky, green vegetation, natural skin tones, wood, stone — whatever fits the world).\n'+
+  '2. UI LAYER — buttons, bars, panels, popups, tabs, lists, navigation: strictly the palette and rules below. UI parts are manufactured components placed ON TOP of the illustration, never part of it.\n'+
+  'No full-screen color grading, sepia, tint, overlay, monochrome treatment, or global palette mapping.';
+
+ var jobs=[];
+ if(parts.indexOf('Tab')>=0) jobs.push('the selected tab');
+ if(parts.indexOf('Progress Bar')>=0||v('screenType')==='Home') jobs.push('the EXP / progress bar fill');
+ if(parts.indexOf('Badge')>=0) jobs.push('badges');
+ jobs.push('the selected bottom-navigation item');
+ var palette='UI PALETTE (UI layer only — use only these 5 colors; never recolor a button by its meaning):\n'+
+  '- Primary '+pal.p+' — solid fill of main action buttons (PLAY, GO, confirm); never outline-only or hollow\n'+
+  '- Secondary '+pal.s+' — solid fill of sub buttons, plus '+jobs.slice(0,2).join(' and ')+'; must be visible in at least 2 places (waived if none of these exist)\n'+
+  '- Background '+pal.bg+' — base of panels and bars\n'+
+  '- Accent '+pal.a+' — highlights and rewards\n'+
+  '- Danger '+pal.d+' — destructive actions only';
+
+ var deco;
+ if(placement==='None'){
+  deco='DECORATION RULE: none — every component is completely plain, with no ornament of any kind.';
+ } else {
+  var placeLine={'Corner':'the 4 corners of each decorated component only — never top center, bottom center, or edge midpoints','Top Center':'the top-center edge only, once per decorated component — all corners stay plain','Mid Edge':'edge midpoints only — never corners'}[placement];
+  var alt=['gem','seal','arch','crest','notch','leaf','braid','relief','cog','shield','gate','step'].filter(function(s){return s!==shape.toLowerCase();}).join(', ');
+  var BUTTONS=['Primary Button','Secondary Button','Icon Button'], PANELS=['Panel','Popup Window'];
+  var items=parts.slice(); if(items.indexOf('Bottom Navigation')<0) items.push('Bottom Navigation');
+  var decorated=[], plain=[];
+  items.forEach(function(p){
+   var yes=scope==='all'||BUTTONS.indexOf(p)>=0||(scope==='buttonsPanels'&&PANELS.indexOf(p)>=0);
+   (yes?decorated:plain).push(p);
+  });
+  deco='DECORATION RULE (the only ornament allowed on this screen):\n'+
+   '- '+shape+' at '+placeLine+'.\n'+
+   (t?'- Construction: '+t.geo+'; looks '+t.analogy+'. Check: '+t.count+'.\n':'')+
+   '- Intensity: '+decorationLevelText()+'. Carved into or grown from the frame border — never a floating sticker.\n'+
+   '- Never use: '+alt+', swords, wings, stars, ribbons, or any other ornament.\n'+
+   '- DECORATED: '+(decorated.join(', ')||'none')+'.\n'+
+   '- PLAIN (continuous undecorated frame, same radius, stroke, material and colors): '+(plain.join(', ')||'none')+'.';
+ }
+
+ var system='SYSTEM: one corner radius (~'+v('radius')+'px), one thin uniform stroke (~'+v('stroke')+'px), one soft downward shadow direction, every button the same height (~'+v('buttonHeight')+'px), icons ~'+v('iconSize')+'px, layout on a '+g+'px grid.';
+
+ var ux=getUx().map(function(u){return UX_EN[u]||u;});
+ var screen='SCREEN: '+v('screenType')+' · '+enLabel(v('layoutPriority'))+(enLabel(v('safeArea'))==='Enabled'?' · respect device safe areas':'')+(ux.length?' · UX goal: '+ux.join(', '):'')+'\n'+
+  'WIREFRAME — structural guide only: it fixes which elements exist, their grouping, left/right position, and top-to-bottom order. Sizes, spacing, and rhythm are yours to design for a relaxed, premium feel (layout freedom only — never colors, shapes, or decoration).\n'+
+  v('wireframe');
+
+ var spacing='SPACING: keep at least '+edge+'px clear at every screen edge, at least '+edge+'px between stacked sections, and at least '+gap+'px between neighboring components. Nothing touches anything; the background or key visual stays visible between all elements. Prefer fewer elements per row over tight packing.';
+
+ var consistency2='CONSISTENCY: every instance of a component type is drawn identically — shape, fill, stroke, shadow, material, and decoration. Composite components (e.g. a combined currency bar) keep one internal structure; do not split or merge them.';
+
+ var neg='no floating decorations, no sticker-like ornaments';
+ if(placement==='Corner') neg+=', no top-center ornaments';
+ if(placement==='Top Center') neg+=', no corner ornaments or brackets';
+ if(placement==='None') neg+=', no ornaments, no decorative borders';
+ else if(scope!=='all') neg+=', no decoration on plain components';
+ neg+=', no cramped layout';
+ var userNeg=negativeText(); if(userNeg) neg+=', '+userNeg;
+
+ return 'TEXT-TO-IMAGE ONLY.\nGenerate one completely new image from scratch.\nThere is NO reference image, NO attached image, and NO image to edit.\nIgnore any previous images. Do not perform image editing, inpainting, variation, or style transfer.\n\n'+
+  thesis+'\n\n'+twoLayer+'\n\n'+palette+'\n\n'+deco+'\n\n'+system+'\n\n'+screen+'\n\n'+spacing+'\n\n'+consistency2+'\n\nNegative Prompt: '+neg+extraText();
 }
 function legacyPromptPackHeader(){return 'IMPORTANT — GENERATION INSTRUCTIONS (read before generating):\n'+
  'This is a pure TEXT-TO-IMAGE task. No reference image is attached, and none is required. Do NOT treat this as image editing or reference-based generation — every image is created from scratch from the written specification below.\n'+
@@ -1249,7 +1317,7 @@ function bindModeButtons(){
 
 var interfaceLanguage='ja';
 var UI_TEXTS={
- 'ゲームUIプロンプト生成ツール v1.64':{en:'Game UI Prompt Generator v1.64',ja:'ゲームUIプロンプト生成ツール v1.64'},
+ 'ゲームUIプロンプト生成ツール v1.65':{en:'Game UI Prompt Generator v1.65',ja:'ゲームUIプロンプト生成ツール v1.65'},
  '表示言語':{en:'Display Language',ja:'表示言語'},
  '1. OUTPUT MODE / 出力モード':{en:'1. OUTPUT MODE',ja:'1. 出力モード'},
  'GAME GENRE / ゲームジャンル':{en:'GAME GENRE',ja:'ゲームジャンル'},
@@ -1379,7 +1447,7 @@ function setInterfaceLanguage(language){
  interfaceLanguage=language==='en'?'en':'ja';
  try{localStorage.setItem('uiGeneratorDisplayLanguage',interfaceLanguage)}catch(e){}
  document.documentElement.lang=interfaceLanguage;
- document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.64'][interfaceLanguage];
+ document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.65'][interfaceLanguage];
  ['ja','en'].forEach(function(lang){
   var button=el('display_lang_'+lang), active=lang===interfaceLanguage;
   button.classList.toggle('active',active);button.setAttribute('aria-selected',active?'true':'false');
