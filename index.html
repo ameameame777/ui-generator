@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ゲームUIプロンプト生成ツール v1.67</title>
+<title>ゲームUIプロンプト生成ツール v1.68</title>
 <style>
 :root{
   --bg:#10131a;--card:#181d27;--field:#111722;--line:#30384a;--text:#eef3ff;--muted:#aab4c8;
@@ -40,7 +40,7 @@ button.secondary{background:var(--yellow)}button.ghost{background:#263144;color:
 </head>
 <body>
 <main>
-<h1>ゲームUIプロンプト生成ツール v1.67</h1>
+<h1>ゲームUIプロンプト生成ツール v1.68</h1>
 <div style="max-width:420px;margin:8px 0 14px">
   <label>表示言語</label>
   <div class="language-toggle" role="tablist" aria-label="Display language">
@@ -535,11 +535,35 @@ function decorationGuide(){
 }
 
 function buildDesignSystemPrompt(){
- var placement=getPlacement(), shape=getPrimitiveShape();
- var decDiagram=(placement!=='None' && shape)
-  ? '7. Decoration diagram — show ONE single Decoration Primitive ('+shape+') at Placement ('+placement+') only. Demonstrate: primitive shape, placement position, scale, integration into frame geometry. Do not show multiple decoration styles or placements.'
-  : '7. Decoration: None — components are clean with no ornamental elements.';
- return 'Create a game UI DESIGN SYSTEM TOKEN SHEET.\n\nPurpose: define reusable visual design tokens only — no UI components, no screen mockup.\n\n'+genreText()+motifText()+commonContext()+'\n\n'+decorationGuide()+'\n\nShow ONLY these 7 token categories as labeled swatches and diagrams on a white studio background:\n1. Color palette — exactly 5 labeled swatches (Primary / Secondary / Background / Accent / Danger). All colors must be derived from the selected Color System: '+v('colorSystem')+'.\n2. Corner radius — show the radius value applied to a rectangle\n3. Shadow — offset Y, blur, and color\n4. Stroke / outline weight\n5. Grid unit and spacing scale\n6. Material / lighting — one flat surface showing material and lighting treatment\n'+decDiagram+'\n\nPresentation: flat reference-sheet layout. White studio background. No environment. No world illustration.\nDo NOT draw any named UI components (button, panel, tab, etc.), characters, mascots, or game screens.\nTreat this as a professional design foundation board, not a UI kit, not a component sheet, and not a game screen.\nNegative Prompt: '+negativeText()+extraText();
+ var d=mockupData(), placement=d.placement, shape=d.shape, t=d.t, pal=d.pal;
+ var level=v('decoration').split(' / ')[0].toLowerCase();
+ var shapeVocab=[d.desc.shape,d.desc.form].filter(Boolean);
+ if(d.desc.edge) shapeVocab.push('edges with '+d.desc.edge);
+ if(d.desc.frame) shapeVocab.push('frames as '+d.desc.frame);
+ var placePhrase={'Corner':'the corners','Top Center':'the top-center edge','Mid Edge':'the edge midpoints'}[placement]||'';
+ var keywords=[v('mood'),enLabel(v('philosophy')),enLabel(v('material')),v('era')];
+ var thesis='DIRECTION THESIS:\n'+
+  'A '+(d.genre?d.genre+' ':'')+(d.mobile?'mobile ':'')+'game UI that feels '+v('mood').toLowerCase()+', set in a world of '+v('era').toLowerCase()+' era inspired by '+enLabel(v('culture'))+' aesthetics. Visual style: '+enLabel(v('style'))+' ('+(STYLE_DESC[v('style')]||'')+'), with '+enLabel(v('philosophy')).toLowerCase()+' sensibility. UI material: '+(d.desc.material||enLabel(v('material')))+'; lighting: '+(d.desc.light||'')+'. Shape language: '+shapeVocab.join('; ')+'. '+
+  (placement!=='None'&&shape?'Decoration language: a '+level+' '+shape+' motif at '+placePhrase+(t?', '+t.analogy:'')+'.':'Decoration language: none — clean, unornamented forms.');
+ var deco=placement!=='None'&&shape
+  ? '6. DECORATION LANGUAGE — a close-up of the '+shape+' ornament built into the corner of one plaque.'+(t?' Construction: '+t.geo+'. Check: '+t.count+'.':'')+' Show only this one ornament.'
+  : '6. DECORATION LANGUAGE — decoration is none: show one clean, unornamented plaque edge.';
+ return 'Draw a brand-new DESIGN DIRECTION BOARD for a game UI — one presentation image that shows the intended look and feel before any components are built.\n\n'+
+  thesis+'\n\n'+
+  'BOARD CONTENT (one image, arranged as a clean art-direction board with generous spacing between sections):\n'+
+  '1. WORLD MOOD — a key-art vignette, about a third of the board, capturing the world, era, mood, and lighting. Natural, varied colors; no UI on it.\n'+
+  '2. KEYWORDS — 3 to 5 short direction words in small caps: '+keywords.join(' · ')+'.\n'+
+  '3. COLOR PALETTE — 5 swatches labeled with role and HEX: Primary '+pal.p+', Secondary '+pal.s+', Background '+pal.bg+', Accent '+pal.a+', Danger '+pal.d+'. Size the swatches by how much each color is used: Background and Primary large, Accent and Danger small.\n'+
+  '4. MATERIAL & LIGHT — one tactile sample tile of the UI material under the chosen lighting, showing sheen, highlight, and shadow.\n'+
+  '5. SHAPE LANGUAGE — 3 blank plaques (no text, no icons) showing the silhouette vocabulary: corner radius, form, edge, and frame treatment.\n'+
+  deco+'\n'+
+  '7. SYSTEM NOTES — tiny annotations only: corner radius ~'+v('radius')+'px, stroke ~'+v('stroke')+'px, '+d.g+'px grid.\n\n'+
+  'RULES:\n'+
+  '- This board shows direction, not a finished UI: no labeled buttons, no screens, no full component kit, no phone mockup.\n'+
+  '- The 5 palette colors govern the swatches, material tile, plaques, and decoration close-up. The world-mood vignette uses free, natural colors.\n'+
+  '- Keep text minimal: section labels, keywords, HEX values, and the tiny system notes only.\n'+
+  '- Use a quiet, neutral board background so every sample stands out.\n\n'+
+  'Negative Prompt: no game screen, no button grid, no phone mockup, no infographic clutter, no paragraphs of text'+(negativeText()?', '+negativeText():'')+extraText();
 }
 function interactivePartsText(){
  var INTERACTIVE=['Primary Button','Secondary Button','Icon Button','Tab','Toggle Switch','Slider','Input Field'];
@@ -1007,9 +1031,35 @@ function buildPromptPackFinalStepJa(){
  '生成前に内部で、全必須要素、主役キャラクター、6つのフレームなしサイドイラスト、PLAY、正確な5つのナビゲーションラベルを数え、禁止された余分な要素を除去する。この確認内容は出力しない。\n\nネガティブプロンプト: '+neg;
 }
 function buildDesignSystemPromptJa(){
- var shape=getPrimitiveShape(), placement=getPlacement();
- var dec=placement==='None'?'7. 装飾: なし。完全にプレーンな形状。':'7. 装飾図 — Decoration Primitive '+shape+'をPlacement '+placement+'だけに適用し、形、位置、スケール、フレームへの一体化を示す。';
- return 'ゲームUIのDESIGN SYSTEM TOKEN SHEETを1枚作成する。目的は再利用可能なビジュアルトークンの定義だけ。UIコンポーネント、画面モックアップ、キャラクターを描かない。\n\n'+commonContextJa()+'\n\n'+decorationGuideJa()+'\n\n白いスタジオ背景に、ラベル付きの次の7分類だけを示す:\n1. カラーパレット — Primary / Secondary / Background / Accent / Dangerの正確な5色とHEX値\n2. 角丸 — 長方形へ適用したradius値\n3. 影 — Yオフセット、ぼかし、色\n4. 線／アウトライン幅\n5. グリッド単位とスペーシングスケール\n6. 素材／照明 — 1枚の平らな表面\n'+dec+'\n\n平面のプロ向け基礎資料として構成し、環境、世界背景、ボタン、パネル、タブ、端末、ゲーム画面を描かない。\nネガティブプロンプト: '+negativeText()+extraText();
+ var d=mockupData(), placement=d.placement, shape=d.shape, t=d.t, pal=d.pal;
+ var levelJa={'Small':'控えめな','Medium':'中程度の','Large':'大きく目立つ'}[v('decoration').split(' / ')[0]]||'';
+ var shapeVocab=[d.desc.shape,d.desc.form].filter(Boolean);
+ if(d.desc.edge) shapeVocab.push('縁: '+d.desc.edge);
+ if(d.desc.frame) shapeVocab.push('枠: '+d.desc.frame);
+ var placeJa={'Corner':'四隅','Top Center':'上辺中央','Mid Edge':'各辺の中点'}[placement]||'';
+ var keywords=[v('mood'),enLabel(v('philosophy')),enLabel(v('material')),v('era')];
+ var thesis='方向性（DIRECTION THESIS）:\n'+
+  (d.genre?d.genre+'の':'')+(d.mobile?'スマホ':'')+'ゲームUI。'+v('mood')+'な雰囲気で、'+v('era')+'の時代感をもち、'+v('culture')+'の美意識から着想した世界。ビジュアルスタイルは'+v('style')+'（'+(STYLE_DESC[v('style')]||'')+'）で、'+v('philosophy')+'の感性。UIの素材: '+(d.desc.material||v('material'))+'。ライティング: '+(d.desc.light||'')+'。形の言語: '+shapeVocab.join('; ')+'。'+
+  (placement!=='None'&&shape?'装飾の言語: '+placeJa+'に'+levelJa+shape+'のモチーフ'+(t?'（'+t.analogy+'）':'')+'。':'装飾の言語: なし — 装飾のないすっきりした形。');
+ var deco=placement!=='None'&&shape
+  ? '6. 装飾の言語 — プレート1枚の角に組み込んだ'+shape+'装飾の拡大図。'+(t?'形: '+t.geo+'。確認: '+t.count+'。':'')+'この装飾1つだけを見せる。'
+  : '6. 装飾の言語 — 装飾なし。装飾のないプレートの縁を1つ見せる。';
+ return '以下の内容で、ゲームUIの「デザイン方向性ボード」を新しく1枚描いてください。部品を作る前に、目指す見た目と雰囲気を示すプレゼンテーション用の1枚です。\n\n'+
+  thesis+'\n\n'+
+  'ボードの内容（1枚の画像に、すっきりしたアートディレクションボードとしてまとめ、各セクションの間に十分な余白をとる）:\n'+
+  '1. 世界の雰囲気 — ボードの約3分の1を使うキーアートの小さな絵。世界、時代、ムード、光を表現する。自然で多様な色を使い、UIは載せない。\n'+
+  '2. キーワード — 方向性を表す短い言葉を3〜5個、小さめの大文字で: '+keywords.join(' · ')+'。\n'+
+  '3. カラーパレット — 役割とHEX値を添えた5色の見本: Primary '+pal.p+'、Secondary '+pal.s+'、Background '+pal.bg+'、Accent '+pal.a+'、Danger '+pal.d+'。使用量に合わせて見本の大きさを変える（BackgroundとPrimaryは大きく、AccentとDangerは小さく）。\n'+
+  '4. 素材と光 — 選んだライティングで照らしたUI素材のサンプルタイル1枚。艶、ハイライト、影がわかるようにする。\n'+
+  '5. 形の言語 — 文字もアイコンもない無地のプレート3枚で、シルエットの考え方（角丸、フォーム、縁、枠の処理）を示す。\n'+
+  deco+'\n'+
+  '7. システムメモ — ごく小さな注記だけ: 角丸 約'+v('radius')+'px、線 約'+v('stroke')+'px、'+d.g+'pxグリッド。\n\n'+
+  'ルール:\n'+
+  '- このボードは方向性を示すもので、完成したUIではない。文字入りのボタン、画面、部品一式、端末モックアップは描かない。\n'+
+  '- パレットの5色は、色見本、素材タイル、プレート、装飾の拡大図に使う。世界の雰囲気の絵には自由で自然な色を使う。\n'+
+  '- 文字は最小限にする（セクション名、キーワード、HEX値、小さなシステムメモだけ）。\n'+
+  '- 各サンプルが引き立つよう、ボードの背景は落ち着いたニュートラルな色にする。\n\n'+
+  'ネガティブプロンプト: no game screen, no button grid, no phone mockup, no infographic clutter, no paragraphs of text'+(negativeText()?', '+negativeText():'')+extraText();
 }
 function buildComponentSheetPromptJa(){return '清潔なゲームUI COMPONENT SHEETを1枚だけ作成する。キャラクター、マスコット、端末モックアップ、インフォグラフィック、表、装飾背景を入れない。\n\n'+commonContextJa()+'\n\n再利用コンポーネント:\n'+partsText()+'\n\nすべての部品でradius、stroke、shadow、highlight、material、color、depthを統一する。装飾範囲外のコンポーネントは完全にプレーンにする。操作可能な各コンポーネントについてNormal / Pressed / Disabled / Selected / Locked / Notificationの6状態を横並びで示す。状態間で変更できるのは色、影、不透明度、オーバーレイだけで、形状、角丸、線、素材を変えない。\n\n'+decorationGuideJa()+'\nネガティブプロンプト: '+negativeText()+extraText();}
 function buildPromptPackFinalStep(){
@@ -1362,7 +1412,7 @@ function bindModeButtons(){
 
 var interfaceLanguage='ja';
 var UI_TEXTS={
- 'ゲームUIプロンプト生成ツール v1.67':{en:'Game UI Prompt Generator v1.67',ja:'ゲームUIプロンプト生成ツール v1.67'},
+ 'ゲームUIプロンプト生成ツール v1.68':{en:'Game UI Prompt Generator v1.68',ja:'ゲームUIプロンプト生成ツール v1.68'},
  '表示言語':{en:'Display Language',ja:'表示言語'},
  '1. OUTPUT MODE / 出力モード':{en:'1. OUTPUT MODE',ja:'1. 出力モード'},
  'GAME GENRE / ゲームジャンル':{en:'GAME GENRE',ja:'ゲームジャンル'},
@@ -1492,7 +1542,7 @@ function setInterfaceLanguage(language){
  interfaceLanguage=language==='en'?'en':'ja';
  try{localStorage.setItem('uiGeneratorDisplayLanguage',interfaceLanguage)}catch(e){}
  document.documentElement.lang=interfaceLanguage;
- document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.67'][interfaceLanguage];
+ document.title=UI_TEXTS['ゲームUIプロンプト生成ツール v1.68'][interfaceLanguage];
  ['ja','en'].forEach(function(lang){
   var button=el('display_lang_'+lang), active=lang===interfaceLanguage;
   button.classList.toggle('active',active);button.setAttribute('aria-selected',active?'true':'false');
